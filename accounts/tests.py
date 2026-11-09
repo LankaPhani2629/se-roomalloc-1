@@ -57,7 +57,7 @@ class AccountsSecurityAndAuthTests(TestCase):
             'password': self.password,
         })
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('dashboard_redirect'))
+        self.assertEqual(response.url, reverse('dashboard_redirect'))
 
     def test_invalid_login(self):
         """Test invalid login credentials fails with error message."""

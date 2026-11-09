@@ -100,6 +100,7 @@ class FeePaymentAndConfirmationTests(TestCase):
     def test_fee_payment_after_due_date_expires_allotment(self):
         """Test business rule: allotment is confirmed ONLY after fee is paid by due date; otherwise Expired."""
         alloc = allocate_room_to_student(student=self.student, room=self.room, due_days=7)
+        self.room.refresh_from_db()
         self.assertEqual(self.room.occupied_count, 1)
 
         # Simulate due date expired in the past

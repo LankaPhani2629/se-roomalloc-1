@@ -103,9 +103,10 @@ def generate_excel_table_report(title, headers, rows, filename="report.xlsx"):
             c.alignment = Alignment(vertical="center")
 
     # Auto-adjust column widths
-    for col in ws.columns:
+    from openpyxl.utils import get_column_letter
+    for col_idx, col in enumerate(ws.columns, start=1):
         max_len = 0
-        col_letter = col[0].column_letter
+        col_letter = get_column_letter(col_idx)
         for cell in col:
             if cell.row > 1 and cell.value:
                 max_len = max(max_len, len(str(cell.value)))
