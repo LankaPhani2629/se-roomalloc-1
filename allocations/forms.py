@@ -22,7 +22,7 @@ class AllocationRuleForm(forms.ModelForm):
 
 class ManualAllocationForm(forms.Form):
     student = forms.ModelChoiceField(
-        queryset=Student.objects.filter(allocations__is_active=False).distinct() | Student.objects.filter(allocations__isnull=True),
+        queryset=Student.objects.all(),
         widget=forms.Select(attrs={'class': 'form-select'}),
         label="Select Student (without active allotment)"
     )
