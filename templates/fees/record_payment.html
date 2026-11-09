@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Record Fee Payment - Accountant Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-6">
+        <div class="card shadow p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle bg-success-subtle text-success p-3">
+                    <i class="bi bi-receipt fs-2"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">Record Student Payment</h3>
+                    <p class="text-muted mb-0">Validate fee dues, generate printable receipt, and confirm allotment.</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info small py-2 mb-4">
+                <i class="bi bi-shield-check me-1"></i>
+                Business Rule: If payment is recorded on or before due date, allotment becomes <strong>CONFIRMED</strong>. If past due date, allotment marks <strong>EXPIRED</strong> and releases the room.
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ form.allocation.label }} *</label>
+                    {{ form.allocation }}
+                    {% if form.allocation.errors %}<div class="text-danger small">{{ form.allocation.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Amount Paid (₹) *</label>
+                        {{ form.amount }}
+                        {% if form.amount.errors %}<div class="text-danger small">{{ form.amount.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Payment Mode *</label>
+                        {{ form.payment_mode }}
+                        {% if form.payment_mode.errors %}<div class="text-danger small">{{ form.payment_mode.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Transaction / Reference ID *</label>
+                    {{ form.transaction_id }}
+                    {% if form.transaction_id.errors %}<div class="text-danger small">{{ form.transaction_id.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Remarks</label>
+                    {{ form.remarks }}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'pending_dues' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-bold shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Confirm & Issue Receipt
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

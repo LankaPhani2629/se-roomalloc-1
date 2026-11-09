@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt #{{ payment.receipt_no }} - Campus Hostel{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body { background-color: #fff !important; }
+        .navbar, footer, .no-print { display: none !important; }
+        .main-content { padding: 0 !important; }
+        .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+    }
+    .receipt-container {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="receipt-container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <button onclick="window.print()" class="btn btn-primary fw-bold shadow-sm">
+            <i class="bi bi-printer-fill me-1"></i> Print / Save Receipt PDF
+        </button>
+    </div>
+
+    <div class="card shadow p-5 bg-white border">
+        <!-- Receipt Header -->
+        <div class="row align-items-center border-bottom pb-4 mb-4">
+            <div class="col-8">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-buildings-fill fs-2 text-primary"></i>
+                    <h3 class="fw-bold mb-0 text-dark">CAMPUS HOSTEL RESIDENCES</h3>
+                </div>
+                <p class="text-muted small mb-0">Student Housing Administration &bull; Fee Collection Department</p>
+                <div class="small text-muted">Official Payment Acknowledgment Voucher</div>
+            </div>
+            <div class="col-4 text-end">
+                <div class="badge bg-success-subtle text-success fs-6 px-3 py-2 border border-success mb-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> PAID & CONFIRMED
+                </div>
+                <div class="fw-bold fs-5 text-primary">{{ payment.receipt_no }}</div>
+                <div class="small text-muted">Date: {{ payment.payment_date|date:"F d, Y" }}</div>
+            </div>
+        </div>
+
+        <!-- Receipt Details Grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-6">
+                <h6 class="text-uppercase text-muted fw-bold small mb-2">Student Information</h6>
+                <div class="fw-bold fs-5 text-dark">{{ payment.allocation.student.name }}</div>
+                <div>Roll / Student ID: <strong>{{ payment.allocation.student.student_id }}</strong></div>
+                <div>Course & Year: {{ payment.allocation.student.course }} (Year {{ payment.allocation.student.year }})</div>
+                <div>Contact: {{ payment.allocation.student.phone }}</div>
+            </div>
+
+            <div class="col-6">
+                <h6 class="text-uppercase text-muted fw-bold small mb-2">Hostel & Room Allotment</h6>
+                <div class="fw-bold fs-5 text-dark">{{ payment.allocation.room.hostel.name }}</div>
+                <div>Room: <strong>Room {{ payment.allocation.room.room_no }}</strong> (Floor {{ payment.allocation.room.floor_no }})</div>
+                <div>Room Type: {{ payment.allocation.room.get_room_type_display }}</div>
+                <div>Academic Year: {{ payment.allocation.academic_year }}</div>
+            </div>
+        </div>
+
+        <!-- Payment Breakdown Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description</th>
+                        <th>Payment Mode</th>
+                        <th>Transaction ID</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>Hostel Accommodation Fee</strong>
+                            <div class="small text-muted">{{ payment.allocation.academic_year }} Allotment Confirmation</div>
+                        </td>
+                        <td>{{ payment.get_payment_mode_display }}</td>
+                        <td><code>{{ payment.transaction_id }}</code></td>
+                        <td class="text-end fw-bold fs-5 text-success">₹{{ payment.amount }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <th colspan="3" class="text-end">Total Amount Paid:</th>
+                        <th class="text-end fs-5 text-success">₹{{ payment.amount }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {% if payment.remarks %}
+            <div class="small text-muted mb-4">
+                <strong>Remarks:</strong> {{ payment.remarks }}
+            </div>
+        {% endif %}
+
+        <!-- Signatures & Disclaimer -->
+        <div class="row pt-5 mt-4 border-top">
+            <div class="col-6">
+                <div class="small text-muted">Generated by: {{ payment.recorded_by.username|default:"Online Portal" }}</div>
+                <div class="small text-muted">System Timestamp: {{ payment.payment_date|date:"Y-m-d H:i:s" }}</div>
+            </div>
+            <div class="col-6 text-end">
+                <div class="fw-bold text-dark pt-3">Authorized Signatory</div>
+                <div class="small text-muted">Hostel Accounts Officer</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

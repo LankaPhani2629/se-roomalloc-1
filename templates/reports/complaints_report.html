@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Complaints Report - Campus Hostel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-tools text-danger me-2"></i>Complaints & Grievances Report</h2>
+        <p class="text-muted mb-0">Record of all student maintenance and facilities complaints.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'complaints_report' %}?export=pdf" class="btn btn-danger fw-bold shadow-sm">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
+        </a>
+        <a href="{% url 'complaints_report' %}?export=excel" class="btn btn-success fw-bold shadow-sm">
+            <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Student Name</th>
+                    <th>Hostel / Room</th>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Date Filed</th>
+                    <th>Status</th>
+                    <th>Resolution Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in complaints %}
+                    <tr>
+                        <td class="fw-bold">#CMP-{{ c.pk }}</td>
+                        <td class="fw-semibold">{{ c.student.name }}</td>
+                        <td>
+                            {% if c.room %}
+                                {{ c.room.hostel.name }} Rm {{ c.room.room_no }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ c.get_category_display }}</span></td>
+                        <td>{{ c.title }}</td>
+                        <td>{{ c.created_at|date:"Y-m-d" }}</td>
+                        <td>
+                            {% if c.status == 'RESOLVED' or c.status == 'CLOSED' %}
+                                <span class="badge bg-success">{{ c.get_status_display }}</span>
+                            {% elif c.status == 'IN_PROGRESS' %}
+                                <span class="badge bg-warning text-dark">{{ c.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">Open</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ c.warden_remarks|default:"None" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">No complaints filed.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

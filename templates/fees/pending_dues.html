@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Fee Dues - Hostel Accountant{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-hourglass-split text-danger me-2"></i>Pending Fee Dues</h2>
+        <p class="text-muted mb-0">List of students with pending fee payments for their allocated rooms.</p>
+    </div>
+    <form method="post" onsubmit="return confirm('Expire all allotments that missed their payment due date?');">
+        {% csrf_token %}
+        <button type="submit" name="expire_overdue" value="1" class="btn btn-outline-danger fw-bold shadow-sm">
+            <i class="bi bi-clock-history me-1"></i> Expire Overdue Allocations
+        </button>
+    </form>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Allotment</th>
+                    <th>Student Name</th>
+                    <th>Roll ID</th>
+                    <th>Hostel & Room</th>
+                    <th>Allotted Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alloc in pending_allocations %}
+                    <tr {% if alloc.due_date < today %}class="table-danger"{% endif %}>
+                        <td class="fw-bold">#AL-{{ alloc.pk }}</td>
+                        <td class="fw-semibold">{{ alloc.student.name }}</td>
+                        <td>{{ alloc.student.student_id }}</td>
+                        <td>{{ alloc.room.hostel.name }} - Room {{ alloc.room.room_no }}</td>
+                        <td>{{ alloc.allocation_date|date:"M d, Y" }}</td>
+                        <td>
+                            <strong>{{ alloc.due_date|date:"M d, Y" }}</strong>
+                            {% if alloc.due_date < today %}
+                                <span class="badge bg-danger ms-1">Overdue!</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-warning text-dark">{{ alloc.get_status_display }}</span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'record_payment' %}?allocation={{ alloc.pk }}" class="btn btn-sm btn-success fw-bold">
+                                <i class="bi bi-cash me-1"></i> Collect Fee
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-check-circle fs-2 text-success d-block mb-2"></i>
+                            Great! No pending fee dues at this moment.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

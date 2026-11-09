@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Update Complaint #{{ complaint.pk }} - Warden Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-6">
+        <div class="card shadow p-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <h3 class="fw-bold mb-0">Update Complaint Status</h3>
+                <span class="badge bg-secondary fs-6">#CMP-{{ complaint.pk }}</span>
+            </div>
+
+            <div class="bg-light p-3 rounded-3 mb-4">
+                <div class="small text-muted">Complainant:</div>
+                <div class="fw-bold fs-6">{{ complaint.student.name }} ({{ complaint.student.student_id }})</div>
+                {% if complaint.room %}
+                    <div class="small text-muted mt-1">Hostel & Room: <strong>{{ complaint.room.hostel.name }} - Room {{ complaint.room.room_no }}</strong></div>
+                {% endif %}
+                <div class="small text-muted mt-1">Category: <strong>{{ complaint.get_category_display }}</strong></div>
+                <div class="mt-2 pt-2 border-top">
+                    <strong class="d-block">{{ complaint.title }}</strong>
+                    <div class="small text-dark">{{ complaint.description }}</div>
+                </div>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Resolution Status *</label>
+                    {{ form.status }}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Warden Remarks / Resolution Notes</label>
+                    {{ form.warden_remarks }}
+                    <div class="form-text small">Student will be notified automatically with these remarks.</div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'warden_complaints' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Update Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Payment History - Hostel Accountant{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-clock-history text-primary me-2"></i>Fee Payment Transactions</h2>
+        <p class="text-muted mb-0">Audit record of all collected hostel fees and receipts.</p>
+    </div>
+    <a href="{% url 'record_payment' %}" class="btn btn-success fw-bold shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Record New Payment
+    </a>
+</div>
+
+<div class="card shadow-sm p-3 mb-4 bg-white">
+    <form method="get" class="row g-2">
+        <div class="col-md-10">
+            <input type="text" name="q" class="form-control" placeholder="Search receipt number, transaction ID or student name..." value="{{ q }}">
+        </div>
+        <div class="col-md-2 d-flex gap-1">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+            <a href="{% url 'payment_history' %}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Receipt No.</th>
+                    <th>Student Name</th>
+                    <th>Roll ID</th>
+                    <th>Amount Paid</th>
+                    <th>Mode</th>
+                    <th>Transaction ID</th>
+                    <th>Date & Time</th>
+                    <th>Accountant</th>
+                    <th class="text-end">Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ p.receipt_no }}</td>
+                        <td class="fw-semibold">{{ p.allocation.student.name }}</td>
+                        <td>{{ p.allocation.student.student_id }}</td>
+                        <td><strong class="text-success fs-6">₹{{ p.amount }}</strong></td>
+                        <td><span class="badge bg-light text-dark border">{{ p.get_payment_mode_display }}</span></td>
+                        <td class="small">{{ p.transaction_id }}</td>
+                        <td class="small">{{ p.payment_date|date:"M d, Y H:i" }}</td>
+                        <td class="small text-muted">{{ p.recorded_by.username|default:"System" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'receipt_detail' p.pk %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="bi bi-printer me-1"></i> Print
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">No fee payments recorded yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
