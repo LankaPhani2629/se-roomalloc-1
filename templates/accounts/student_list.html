@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Registered Students - Hostel Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Registered Students</h2>
+        <p class="text-muted mb-0">Total Students: {{ students.count }}</p>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="card p-3 mb-4 shadow-sm">
+    <form method="get" class="row g-3">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search by name, roll ID or email..." value="{{ q }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="gender" class="form-select">
+                <option value="">All Genders</option>
+                <option value="MALE" {% if gender == 'MALE' %}selected{% endif %}>Male</option>
+                <option value="FEMALE" {% if gender == 'FEMALE' %}selected{% endif %}>Female</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="year" class="form-select">
+                <option value="">All Years</option>
+                <option value="1" {% if year == '1' %}selected{% endif %}>1st Year</option>
+                <option value="2" {% if year == '2' %}selected{% endif %}>2nd Year</option>
+                <option value="3" {% if year == '3' %}selected{% endif %}>3rd Year</option>
+                <option value="4" {% if year == '4' %}selected{% endif %}>4th Year</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+            <a href="{% url 'admin_student_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Students Table -->
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Roll ID</th>
+                    <th>Full Name</th>
+                    <th>Gender</th>
+                    <th>Course</th>
+                    <th>Year</th>
+                    <th>Phone / Email</th>
+                    <th>Merit (%)</th>
+                    <th>Guardian</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ student.student_id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>
+                            <span class="badge {% if student.gender == 'MALE' %}bg-primary{% else %}bg-danger{% endif %}">
+                                {{ student.get_gender_display }}
+                            </span>
+                        </td>
+                        <td>{{ student.course }}</td>
+                        <td>Year {{ student.year }}</td>
+                        <td>
+                            <div class="small">{{ student.phone }}</div>
+                            <div class="small text-muted">{{ student.email }}</div>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ student.merit_score }}%</span></td>
+                        <td>
+                            <div class="small fw-semibold">{{ student.guardian_name }}</div>
+                            <div class="small text-muted">{{ student.guardian_phone }}</div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No students found matching current filters.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

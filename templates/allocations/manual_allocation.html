@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Room Allocation - Warden Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-6">
+        <div class="card shadow p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle bg-primary-subtle text-primary p-3">
+                    <i class="bi bi-person-check fs-2"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">Manual Room Allotment</h3>
+                    <p class="text-muted mb-0">Assign a student to a room with validation checks.</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info small py-2 mb-4">
+                <i class="bi bi-info-circle me-1"></i>
+                The system checks that male students are only assigned to Boys hostels, female students to Girls hostels, and that the room has free capacity.
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ form.student.label }} *</label>
+                    {{ form.student }}
+                    {% if form.student.errors %}<div class="text-danger small">{{ form.student.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ form.room.label }} *</label>
+                    {{ form.room }}
+                    {% if form.room.errors %}<div class="text-danger small">{{ form.room.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">{{ form.due_days.label }} *</label>
+                    {{ form.due_days }}
+                    <div class="form-text small">Number of calendar days for the student to pay the hostel fee before allotment expires.</div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'warden_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i> Confirm Room Allotment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

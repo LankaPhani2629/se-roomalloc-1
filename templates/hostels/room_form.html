@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Hostel Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow p-4">
+            <h3 class="fw-bold text-dark mb-3"><i class="bi bi-door-open text-primary me-2"></i>{{ title }}</h3>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Hostel Block *</label>
+                    {{ form.hostel }}
+                    {% if form.hostel.errors %}<div class="text-danger small">{{ form.hostel.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Floor Number *</label>
+                        {{ form.floor_no }}
+                        {% if form.floor_no.errors %}<div class="text-danger small">{{ form.floor_no.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Room Number *</label>
+                        {{ form.room_no }}
+                        {% if form.room_no.errors %}<div class="text-danger small">{{ form.room_no.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Capacity (Total Beds) *</label>
+                        {{ form.capacity }}
+                        {% if form.capacity.errors %}<div class="text-danger small">{{ form.capacity.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Room Type *</label>
+                        {{ form.room_type }}
+                        {% if form.room_type.errors %}<div class="text-danger small">{{ form.room_type.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Status *</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors.0 }}</div>{% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-3">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'room_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Save Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}All Room Allotments - Hostel Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-list-check text-primary me-2"></i>Hostel Room Allotments</h2>
+        <p class="text-muted mb-0">Total Allotments: {{ allocations.count }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if user.role == 'ADMIN' or user.is_superuser %}
+            <a href="{% url 'run_auto_allocation' %}" class="btn btn-outline-primary fw-bold">
+                <i class="bi bi-gear-fill me-1"></i> Auto Allocate
+            </a>
+        {% endif %}
+        {% if user.role == 'WARDEN' or user.role == 'ADMIN' %}
+            <a href="{% url 'manual_allocation' %}" class="btn btn-primary fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Manual Allotment
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm p-3 mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Search by student name, roll ID or room number..." value="{{ q }}">
+        </div>
+        <div class="col-md-3">
+            <select name="hostel" class="form-select">
+                <option value="">All Hostels</option>
+                {% for h in hostels %}
+                    <option value="{{ h.id }}" {% if selected_hostel == h.id|stringformat:"s" %}selected{% endif %}>{{ h.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="PENDING_PAYMENT" {% if selected_status == 'PENDING_PAYMENT' %}selected{% endif %}>Pending Fee Payment</option>
+                <option value="CONFIRMED" {% if selected_status == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                <option value="VACATED" {% if selected_status == 'VACATED' %}selected{% endif %}>Vacated</option>
+                <option value="EXPIRED" {% if selected_status == 'EXPIRED' %}selected{% endif %}>Expired</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-1">
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+            <a href="{% url 'allocation_results' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Allotments Table -->
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Allotment ID</th>
+                    <th>Student Name</th>
+                    <th>Roll ID</th>
+                    <th>Gender</th>
+                    <th>Hostel & Room</th>
+                    <th>Allotment Date</th>
+                    <th>Fee Due Date</th>
+                    <th>Status</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alloc in allocations %}
+                    <tr>
+                        <td class="fw-bold">#AL-{{ alloc.pk }}</td>
+                        <td class="fw-semibold">{{ alloc.student.name }}</td>
+                        <td>{{ alloc.student.student_id }}</td>
+                        <td>
+                            <span class="badge {% if alloc.student.gender == 'MALE' %}bg-primary{% else %}bg-danger{% endif %}">
+                                {{ alloc.student.get_gender_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ alloc.room.hostel.name }}</strong> - Room {{ alloc.room.room_no }}
+                        </td>
+                        <td>{{ alloc.allocation_date|date:"M d, Y" }}</td>
+                        <td>
+                            <span class="text-danger fw-semibold">{{ alloc.due_date|date:"M d, Y" }}</span>
+                        </td>
+                        <td>
+                            {% if alloc.status == 'CONFIRMED' %}
+                                <span class="badge bg-success">Confirmed</span>
+                            {% elif alloc.status == 'PENDING_PAYMENT' %}
+                                <span class="badge bg-warning text-dark">Pending Fee</span>
+                            {% elif alloc.status == 'VACATED' %}
+                                <span class="badge bg-secondary">Vacated</span>
+                            {% elif alloc.status == 'EXPIRED' %}
+                                <span class="badge bg-danger">Expired</span>
+                            {% else %}
+                                <span class="badge bg-info text-dark">{{ alloc.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if alloc.is_active %}
+                                <span class="badge bg-success-subtle text-success fw-bold">Active</span>
+                            {% else %}
+                                <span class="badge bg-light text-muted">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No allocations found matching the current criteria.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

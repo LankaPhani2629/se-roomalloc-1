@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - College Hostel Room Allocation System{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-lg-7 mb-4 mb-lg-0">
+        <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
+            <i class="bi bi-mortarboard-fill me-1"></i> Campus Residential Services
+        </span>
+        <h1 class="display-4 fw-bold text-dark lh-sm mb-3">
+            Smart & Transparent <br><span class="text-primary">Hostel Room Allocation</span>
+        </h1>
+        <p class="lead text-muted mb-4">
+            A comprehensive, rule-based web platform for college student housing management. Featuring gender-segregated allocations, strict capacity limits, automated rule-based allotments, fee validation, room change workflows, and complaint tracking.
+        </p>
+
+        {% if not user.is_authenticated %}
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{% url 'register' %}" class="btn btn-warning btn-lg px-4 fw-bold shadow-sm">
+                    <i class="bi bi-person-plus me-2"></i>Student Registration
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4 shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Portal
+                </a>
+            </div>
+        {% else %}
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{% url 'dashboard_redirect' %}" class="btn btn-primary btn-lg px-4 fw-bold shadow-sm">
+                    <i class="bi bi-speedometer2 me-2"></i>Go to Your Dashboard
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow p-4 border-0 bg-white">
+            <h4 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-lock-fill text-primary me-2"></i>System Modules</h4>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
+                    <div class="rounded-circle bg-primary-subtle p-3 text-primary">
+                        <i class="bi bi-person-badge fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Role-Based Access Control</h6>
+                        <small class="text-muted">Tailored portals for Student, Warden, Administrator, and Accountant.</small>
+                    </div>
+                </div>
+                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
+                    <div class="rounded-circle bg-success-subtle p-3 text-success">
+                        <i class="bi bi-diagram-3 fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Automated Priority Allocation</h6>
+                        <small class="text-muted">Merit, year of study, and gender-locked hostel allotment service.</small>
+                    </div>
+                </div>
+                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
+                    <div class="rounded-circle bg-warning-subtle p-3 text-warning">
+                        <i class="bi bi-credit-card fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Fee Verification & Due Dates</h6>
+                        <small class="text-muted">Allotment confirmed only upon fee payment before due date expiry.</small>
+                    </div>
+                </div>
+                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
+                    <div class="rounded-circle bg-danger-subtle p-3 text-danger">
+                        <i class="bi bi-arrow-repeat fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Room Change & Vacate Requests</h6>
+                        <small class="text-muted">Atomic room transfer and occupancy management with audit tracking.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Business Rules Overview -->
+<div class="row g-4 mt-2">
+    <div class="col-md-3">
+        <div class="card h-100 p-3 border-top border-4 border-primary">
+            <div class="fw-bold fs-5 text-primary mb-2"><i class="bi bi-gender-ambiguous me-2"></i>Gender Enforced</div>
+            <p class="small text-muted mb-0">Boys and girls are restricted exclusively to their respective hostels at DB level.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 p-3 border-top border-4 border-success">
+            <div class="fw-bold fs-5 text-success mb-2"><i class="bi bi-people-fill me-2"></i>Capacity Guard</div>
+            <p class="small text-muted mb-0">Database check constraint guarantees occupied count never exceeds room capacity.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 p-3 border-top border-4 border-warning">
+            <div class="fw-bold fs-5 text-warning mb-2"><i class="bi bi-1-circle-fill me-2"></i>One Active Room</div>
+            <p class="small text-muted mb-0">A student can hold only one active room allotment across the entire campus.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 p-3 border-top border-4 border-info">
+            <div class="fw-bold fs-5 text-info mb-2"><i class="bi bi-bell-fill me-2"></i>In-App & Email</div>
+            <p class="small text-muted mb-0">Instant in-app alerts and notifications whenever application or room state changes.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

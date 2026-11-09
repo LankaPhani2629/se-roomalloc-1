@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Review Application #{{ application.pk }} - Warden Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-7">
+        <div class="card shadow p-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <h3 class="fw-bold mb-0">Application Review</h3>
+                <span class="badge bg-secondary fs-6">#APP-{{ application.pk }}</span>
+            </div>
+
+            <!-- Student Summary -->
+            <div class="bg-light p-3 rounded-3 mb-4">
+                <div class="row g-2">
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Student Name:</span>
+                        <div class="fw-bold">{{ application.student.name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Roll / ID:</span>
+                        <div class="fw-bold">{{ application.student.student_id }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Gender:</span>
+                        <div>
+                            <span class="badge {% if application.student.gender == 'MALE' %}bg-primary{% else %}bg-danger{% endif %}">
+                                {{ application.student.get_gender_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Course & Year:</span>
+                        <div class="fw-semibold">{{ application.student.course }} (Year {{ application.student.year }})</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Merit Score:</span>
+                        <div class="fw-bold text-success">{{ application.student.merit_score }}%</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small">Preferred Room:</span>
+                        <div class="fw-semibold text-primary">{{ application.get_preferred_room_type_display }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Verification Decision *</label>
+                    {{ form.status }}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Warden Remarks / Justification</label>
+                    {{ form.remarks }}
+                    <div class="form-text small">This message will be included in the student's notification.</div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'warden_applications' %}" class="btn btn-outline-secondary">Back to List</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Save Decision
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

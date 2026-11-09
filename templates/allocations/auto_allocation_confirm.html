@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Automatic Room Allocation Engine - Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-7">
+        <div class="card shadow p-4 text-center">
+            <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex p-4 mx-auto mb-3">
+                <i class="bi bi-gear-wide-connected fs-1"></i>
+            </div>
+            <h3 class="fw-bold mb-2">Run Automatic Room Allocation</h3>
+            <p class="text-muted">
+                The automatic allocation service sorts approved student applications by their rule-adjusted priority scores, strictly enforces gender hostel matching (Boys to Boys, Girls to Girls), respects room capacity boundaries via atomic DB transactions, and increments occupied counts.
+            </p>
+
+            <div class="alert alert-warning text-start small my-3">
+                <div class="fw-bold mb-1"><i class="bi bi-shield-check me-1"></i>Guarantees Enforced:</div>
+                <ul class="mb-0 ps-3">
+                    <li>Boys and girls are allotted only to their respective hostels.</li>
+                    <li>A room can never exceed its capacity (database constraint protected).</li>
+                    <li>A student can have only one active allotment.</li>
+                    <li>Database row-locking prevents concurrent double-booking.</li>
+                </ul>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-semibold">Academic Year Filter (Optional)</label>
+                    <input type="text" name="academic_year" class="form-control" placeholder="e.g. 2026-2027 (Leave empty for all active)">
+                </div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4 shadow">
+                        <i class="bi bi-play-fill me-1"></i> Execute Allocation Algorithm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

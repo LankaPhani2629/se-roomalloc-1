@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms & Inventory - Hostel Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-door-open-fill text-primary me-2"></i>Rooms & Inventory</h2>
+        <p class="text-muted mb-0">Total Rooms Found: {{ rooms.count }}</p>
+    </div>
+    {% if user.role == 'ADMIN' or user.is_superuser %}
+        <a href="{% url 'room_create' %}" class="btn btn-primary fw-bold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add New Room
+        </a>
+    {% endif %}
+</div>
+
+<!-- Filters & Search Form -->
+<div class="card shadow-sm p-3 mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <input type="text" name="q" class="form-control" placeholder="Search Room Number..." value="{{ q }}">
+        </div>
+        <div class="col-md-2">
+            <select name="hostel" class="form-select">
+                <option value="">All Hostels</option>
+                {% for h in hostels %}
+                    <option value="{{ h.id }}" {% if selected_hostel == h.id|stringformat:"s" %}selected{% endif %}>{{ h.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="floor" class="form-select">
+                <option value="">All Floors</option>
+                {% for fl in floors %}
+                    <option value="{{ fl }}" {% if selected_floor == fl|stringformat:"s" %}selected{% endif %}>Floor {{ fl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="room_type" class="form-select">
+                <option value="">All Types</option>
+                <option value="SINGLE" {% if selected_room_type == 'SINGLE' %}selected{% endif %}>Single Room</option>
+                <option value="DOUBLE" {% if selected_room_type == 'DOUBLE' %}selected{% endif %}>Double Sharing</option>
+                <option value="TRIPLE" {% if selected_room_type == 'TRIPLE' %}selected{% endif %}>Triple Sharing</option>
+                <option value="FOUR_SHARING" {% if selected_room_type == 'FOUR_SHARING' %}selected{% endif %}>Four Sharing</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="AVAILABLE" {% if selected_status == 'AVAILABLE' %}selected{% endif %}>Available</option>
+                <option value="FULL" {% if selected_status == 'FULL' %}selected{% endif %}>Full</option>
+                <option value="MAINTENANCE" {% if selected_status == 'MAINTENANCE' %}selected{% endif %}>Maintenance</option>
+            </select>
+        </div>
+        <div class="col-md-1 d-flex gap-1">
+            <button type="submit" class="btn btn-primary w-100" title="Apply Filter"><i class="bi bi-funnel"></i></button>
+            <a href="{% url 'room_list' %}" class="btn btn-outline-secondary" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Rooms Table -->
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Hostel</th>
+                    <th>Room No.</th>
+                    <th>Floor</th>
+                    <th>Room Type</th>
+                    <th>Capacity</th>
+                    <th>Occupied</th>
+                    <th>Vacancy</th>
+                    <th>Status</th>
+                    {% if user.role == 'ADMIN' or user.is_superuser %}
+                        <th class="text-end">Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                    <tr>
+                        <td>
+                            <span class="fw-semibold">{{ room.hostel.name }}</span>
+                            <span class="badge {% if room.hostel.hostel_type == 'BOYS' %}bg-primary{% else %}bg-danger{% endif %} ms-1" style="font-size: 0.65rem;">
+                                {{ room.hostel.get_hostel_type_display }}
+                            </span>
+                        </td>
+                        <td class="fw-bold fs-6 text-primary">Room {{ room.room_no }}</td>
+                        <td>Floor {{ room.floor_no }}</td>
+                        <td>{{ room.get_room_type_display }}</td>
+                        <td><span class="badge bg-secondary">{{ room.capacity }} beds</span></td>
+                        <td>
+                            <span class="fw-semibold {% if room.occupied_count == room.capacity %}text-danger{% else %}text-dark{% endif %}">
+                                {{ room.occupied_count }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if room.vacancy > 0 %}
+                                <span class="badge bg-success-subtle text-success fw-bold">{{ room.vacancy }} free</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger fw-bold">0 free</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if room.status == 'AVAILABLE' %}
+                                <span class="badge bg-success">Available</span>
+                            {% elif room.status == 'FULL' %}
+                                <span class="badge bg-danger">Full</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Maintenance</span>
+                            {% endif %}
+                        </td>
+                        {% if user.role == 'ADMIN' or user.is_superuser %}
+                            <td class="text-end">
+                                <a href="{% url 'room_update' room.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'room_delete' room.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-search fs-3 d-block mb-2"></i>
+                            No rooms found matching the current search & filters.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

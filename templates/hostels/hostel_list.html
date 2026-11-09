@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Hostels - Hostel Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-buildings text-primary me-2"></i>Hostel Blocks</h2>
+        <p class="text-muted mb-0">Overview of all residential blocks and management.</p>
+    </div>
+    <a href="{% url 'hostel_create' %}" class="btn btn-primary fw-bold shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add New Hostel
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for hostel in hostels %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 position-relative">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge {% if hostel.hostel_type == 'BOYS' %}bg-primary{% else %}bg-danger{% endif %} px-2 py-1">
+                            {{ hostel.get_hostel_type_display }}
+                        </span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li><a class="dropdown-item" href="{% url 'hostel_update' hostel.pk %}"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'hostel_delete' hostel.pk %}"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h4 class="card-title fw-bold text-dark mb-1">{{ hostel.name }}</h4>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-person-badge me-1"></i> Warden: 
+                        {% if hostel.warden %}{{ hostel.warden.get_full_name|default:hostel.warden.username }}{% else %}<em class="text-warning">Unassigned</em>{% endif %}
+                    </p>
+
+                    <div class="row text-center g-2 py-3 bg-light rounded-3 mb-3">
+                        <div class="col-4">
+                            <div class="small text-muted">Total Rooms</div>
+                            <div class="fw-bold fs-5 text-dark">{{ hostel.rooms.count }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted">Capacity</div>
+                            <div class="fw-bold fs-5 text-primary">{{ hostel.total_capacity }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="small text-muted">Vacant</div>
+                            <div class="fw-bold fs-5 text-success">{{ hostel.total_vacant }}</div>
+                        </div>
+                    </div>
+
+                    {% if hostel.description %}
+                        <p class="small text-muted mb-3">{{ hostel.description|truncatewords:20 }}</p>
+                    {% endif %}
+
+                    <a href="{% url 'room_list' %}?hostel={{ hostel.pk }}" class="btn btn-outline-primary btn-sm w-100 fw-semibold">
+                        <i class="bi bi-door-open me-1"></i> View Rooms ({{ hostel.rooms.count }})
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-building-slash fs-1 text-muted"></i>
+            <h5 class="text-muted mt-3">No hostel blocks registered yet.</h5>
+            <a href="{% url 'hostel_create' %}" class="btn btn-primary mt-2">Create First Hostel</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

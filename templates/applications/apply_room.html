@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for Hostel Room - Campus Hostel{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-7">
+        <div class="card shadow p-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-circle bg-warning-subtle text-warning p-3">
+                    <i class="bi bi-file-earmark-plus-fill fs-2"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">Apply for Hostel Accommodation</h3>
+                    <p class="text-muted mb-0">Academic Year: <strong class="text-primary">{{ active_period.academic_year }}</strong></p>
+                </div>
+            </div>
+
+            <div class="alert alert-info py-2 small mb-4">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                Applications are open until <strong>{{ active_period.end_date|date:"F d, Y" }}</strong>.
+                Allocation follows hostel rules: boys/girls room segregation, priority score, and room availability.
+            </div>
+
+            <!-- Student Summary Card -->
+            <div class="card bg-light p-3 border-0 mb-4">
+                <div class="row g-2 small">
+                    <div class="col-md-6">
+                        <span class="text-muted">Applicant:</span> <strong>{{ student.name }} ({{ student.student_id }})</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Hostel Eligibility:</span> 
+                        <strong class="text-primary">
+                            {% if student.gender == 'MALE' %}Boys Hostels Only{% else %}Girls Hostels Only{% endif %}
+                        </strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Course & Year:</span> <strong>{{ student.course }} - Year {{ student.year }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Merit Score:</span> <strong>{{ student.merit_score }}%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Preferred Room Type *</label>
+                    {{ form.preferred_room_type }}
+                    {% if form.preferred_room_type.errors %}
+                        <div class="text-danger small mt-1">{{ form.preferred_room_type.errors.0 }}</div>
+                    {% endif %}
+                    <div class="form-text small mt-2">
+                        Choose your preferred room occupancy. Actual room assignment depends on merit ranking and available vacancies in the gender-appropriate hostel.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">
+                        <i class="bi bi-send-check me-1"></i> Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

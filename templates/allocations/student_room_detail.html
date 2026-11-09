@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Room Details - Campus Hostel{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-door-open-fill text-primary me-2"></i>My Room Details</h2>
+        <p class="text-muted mb-0">Your current active hostel accommodation and occupancy.</p>
+    </div>
+    {% if allocation %}
+        <div class="d-flex gap-2">
+            <a href="{% url 'student_room_requests' %}" class="btn btn-outline-primary fw-semibold">
+                <i class="bi bi-arrow-left-right me-1"></i> Request Change / Vacate
+            </a>
+            <a href="{% url 'student_complaints' %}" class="btn btn-outline-warning text-dark fw-semibold">
+                <i class="bi bi-exclamation-triangle me-1"></i> Report Maintenance
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% if allocation %}
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow p-4 border-0">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <span class="badge {% if allocation.room.hostel.hostel_type == 'BOYS' %}bg-primary{% else %}bg-danger{% endif %} mb-1">
+                            {{ allocation.room.hostel.get_hostel_type_display }}
+                        </span>
+                        <h3 class="fw-bold mb-0 text-dark">{{ allocation.room.hostel.name }}</h3>
+                        <p class="text-muted small mb-0">Floor {{ allocation.room.floor_no }} &bull; Room {{ allocation.room.room_no }}</p>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-muted">Allotment Status</div>
+                        {% if allocation.status == 'CONFIRMED' %}
+                            <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill me-1"></i>Confirmed</span>
+                        {% elif allocation.status == 'PENDING_PAYMENT' %}
+                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-hourglass-split me-1"></i>Pending Fee Payment</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6">{{ allocation.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 py-2 bg-light rounded-3 mb-4 text-center">
+                    <div class="col-4">
+                        <div class="small text-muted">Room Type</div>
+                        <div class="fw-bold text-dark">{{ allocation.room.get_room_type_display }}</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="small text-muted">Total Capacity</div>
+                        <div class="fw-bold text-primary">{{ allocation.room.capacity }} Beds</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="small text-muted">Current Occupancy</div>
+                        <div class="fw-bold text-success">{{ allocation.room.occupied_count }} Occupants</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 small">
+                    <div class="col-md-6">
+                        <span class="text-muted">Allotment Date:</span>
+                        <span class="fw-bold ms-1">{{ allocation.allocation_date|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Fee Payment Due Date:</span>
+                        <span class="fw-bold text-danger ms-1">{{ allocation.due_date|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Check-In Date:</span>
+                        <span class="fw-semibold ms-1">{{ allocation.check_in_date|default:"Pending check-in" }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Academic Year:</span>
+                        <span class="fw-semibold ms-1">{{ allocation.academic_year }}</span>
+                    </div>
+                </div>
+
+                {% if allocation.status == 'PENDING_PAYMENT' %}
+                    <div class="alert alert-warning mt-4 d-flex align-items-center justify-content-between p-3">
+                        <div>
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                            <strong>Fee payment pending!</strong> Please pay before {{ allocation.due_date|date:"M d, Y" }} to avoid allotment cancellation.
+                        </div>
+                        <a href="{% url 'student_fees' %}" class="btn btn-warning btn-sm fw-bold">Pay Fee</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Roommates Card -->
+        <div class="col-lg-4">
+            <div class="card shadow p-4 border-0">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-people-fill text-primary me-2"></i>Roommates</h5>
+                {% if roommates %}
+                    <div class="list-group list-group-flush">
+                        {% for mate in roommates %}
+                            <div class="list-group-item px-0 py-2 d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-secondary-subtle p-2">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ mate.student.name }}</div>
+                                    <div class="small text-muted">{{ mate.student.course }} (Yr {{ mate.student.year }})</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No other roommates assigned currently.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="card shadow-sm p-5 text-center">
+        <div class="rounded-circle bg-light text-muted d-inline-flex p-4 mx-auto mb-3">
+            <i class="bi bi-door-closed fs-1"></i>
+        </div>
+        <h4 class="fw-bold">No Active Room Allotment</h4>
+        <p class="text-muted">You do not currently have an active room allocation assigned.</p>
+        <div class="mt-2">
+            <a href="{% url 'apply_room' %}" class="btn btn-primary fw-bold px-4">Apply for a Room</a>
+            <a href="{% url 'student_application_status' %}" class="btn btn-outline-secondary px-4 ms-2">View Application Status</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

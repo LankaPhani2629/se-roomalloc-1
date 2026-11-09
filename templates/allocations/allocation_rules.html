@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Configure Allocation Rules - Hostel Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-sliders text-primary me-2"></i>Configurable Allocation Rules</h2>
+        <p class="text-muted mb-0">Define priority weights, gender restrictions, year of study, and room types for automatic allocation.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow p-4">
+            <h4 class="fw-bold mb-3"><i class="bi bi-plus-circle-dotted me-2 text-primary"></i>Add Priority Rule</h4>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Rule Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Target Gender</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Year of Study</label>
+                        {{ form.year_of_study }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Preferred Room Type</label>
+                    {{ form.room_type }}
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Priority Order</label>
+                        {{ form.priority_order }}
+                        <div class="form-text small">1 = Highest</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Bonus Points</label>
+                        {{ form.merit_weight }}
+                        <div class="form-text small">Points added</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Rule Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">Active Rule</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Save Allocation Rule</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">Active Allocation Priority Rules</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order</th>
+                            <th>Rule Name</th>
+                            <th>Criteria</th>
+                            <th>Bonus Points</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in rules %}
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ rule.priority_order }}</td>
+                                <td>
+                                    <strong>{{ rule.name }}</strong>
+                                    {% if rule.description %}<div class="small text-muted">{{ rule.description }}</div>{% endif %}
+                                </td>
+                                <td class="small">
+                                    <div>Gender: <strong>{{ rule.get_gender_display }}</strong></div>
+                                    <div>Year: <strong>{% if rule.year_of_study %}Year {{ rule.year_of_study }}{% else %}All Years{% endif %}</strong></div>
+                                    <div>Room: <strong>{{ rule.room_type|default:"Any" }}</strong></div>
+                                </td>
+                                <td><span class="badge bg-success">+{{ rule.merit_weight }} pts</span></td>
+                                <td>
+                                    {% if rule.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <form method="post" action="{% url 'delete_allocation_rule' rule.pk %}" class="d-inline" onsubmit="return confirm('Delete this rule?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No custom allocation rules configured yet. Default merit scoring will apply.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

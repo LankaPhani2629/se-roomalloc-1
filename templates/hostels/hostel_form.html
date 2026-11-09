@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Hostel Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow p-4">
+            <h3 class="fw-bold text-dark mb-3"><i class="bi bi-building-add text-primary me-2"></i>{{ title }}</h3>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Hostel Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Hostel Type (Gender Restriction) *</label>
+                    {{ form.hostel_type }}
+                    {% if form.hostel_type.errors %}<div class="text-danger small">{{ form.hostel_type.errors.0 }}</div>{% endif %}
+                    <div class="form-text small">Boys and Girls are strictly allotted only to matching hostels.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Assigned Warden</label>
+                    {{ form.warden }}
+                    {% if form.warden.errors %}<div class="text-danger small">{{ form.warden.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Description / Notes</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'hostel_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Save Hostel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
