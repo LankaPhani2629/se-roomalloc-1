@@ -48,3 +48,4 @@ class ApplicationReviewForm(forms.Form):
         required=False,
         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Warden remarks or reason...'})
     )
+

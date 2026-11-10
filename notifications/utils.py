@@ -32,3 +32,4 @@ def create_notification(user, title, message, link=''):
             logger.warning(f"Failed to send email notification to {user.email}: {e}")
 
     return notification
+

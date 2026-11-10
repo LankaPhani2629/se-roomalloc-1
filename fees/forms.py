@@ -39,3 +39,4 @@ class RecordPaymentForm(forms.ModelForm):
         # Prefill default transaction ID
         if not self.initial.get('transaction_id'):
             self.initial['transaction_id'] = f"TXN-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+

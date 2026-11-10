@@ -10,3 +10,4 @@ def unread_notifications_processor(request):
         'unread_notifications_count': 0,
         'recent_notifications': [],
     }
+

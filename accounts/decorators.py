@@ -48,3 +48,4 @@ class RoleRequiredMixin(AccessMixin):
         if not (request.user.is_superuser or request.user.role in self.allowed_roles):
             raise PermissionDenied("You do not have permission to access this page.")
         return super().dispatch(request, *args, **kwargs)
+

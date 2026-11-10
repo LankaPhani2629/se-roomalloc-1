@@ -9,3 +9,4 @@ urlpatterns = [
     path('dashboard-redirect/', views.dashboard_redirect_view, name='dashboard_redirect'),
     path('admin/students/', views.admin_student_list_view, name='admin_student_list'),
 ]
+

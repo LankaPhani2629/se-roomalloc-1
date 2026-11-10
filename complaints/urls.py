@@ -6,3 +6,4 @@ urlpatterns = [
     path('warden/', views.warden_complaints_view, name='warden_complaints'),
     path('warden/<int:pk>/update/', views.warden_complaint_update_view, name='warden_complaint_update'),
 ]
+

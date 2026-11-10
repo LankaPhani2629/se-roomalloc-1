@@ -16,3 +16,4 @@ urlpatterns = [
     path('warden/requests/', views.warden_room_requests_view, name='warden_room_requests'),
     path('warden/requests/<int:pk>/process/', views.warden_process_request_view, name='warden_process_request'),
 ]
+

@@ -21,3 +21,4 @@ class ComplaintUpdateForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
             'warden_remarks': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Action taken or explanation for student...'}),
         }
+

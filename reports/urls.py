@@ -16,3 +16,4 @@ urlpatterns = [
     path('fee-dues/', views.fee_dues_report_view, name='fee_dues_report'),
     path('complaints/', views.complaints_report_view, name='complaints_report'),
 ]
+

@@ -9,3 +9,4 @@ urlpatterns = [
     path('warden/applications/<int:pk>/review/', views.warden_application_review_view, name='warden_application_review'),
     path('admin/periods/', views.application_periods_view, name='application_periods'),
 ]
+

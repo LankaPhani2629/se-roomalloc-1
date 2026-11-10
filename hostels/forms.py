@@ -43,3 +43,4 @@ class RoomForm(forms.ModelForm):
                     f"Capacity ({capacity}) cannot be lower than the current occupied count ({self.instance.occupied_count})."
                 )
         return cleaned_data
+

@@ -12,3 +12,4 @@ urlpatterns = [
     path('rooms/<int:pk>/edit/', views.room_update_view, name='room_update'),
     path('rooms/<int:pk>/delete/', views.room_delete_view, name='room_delete'),
 ]
+

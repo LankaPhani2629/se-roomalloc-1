@@ -6,3 +6,4 @@ urlpatterns = [
     path('<int:pk>/read/', views.mark_as_read_view, name='mark_as_read'),
     path('mark-all-read/', views.mark_all_read_view, name='mark_all_read'),
 ]
+
