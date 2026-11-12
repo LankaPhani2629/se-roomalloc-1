@@ -38,6 +38,9 @@ AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise must come directly after SecurityMiddleware so it can serve
+    # compressed, cached static files for both Django dev server and production.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -90,7 +93,21 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+
+# Directory where collectstatic gathers all static files for production serving.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# STATICFILES_DIRS lists extra locations Django's finders search (dev only).
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# WhiteNoise: serve compressed + fingerprinted static files in production.
+# CompressedManifestStaticFilesStorage adds content hashes to filenames
+# (cache-busting) and pre-compresses assets with gzip/brotli.
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Allow WhiteNoise to use Django's finders in DEBUG mode so collectstatic
+# is not required during local development.
+WHITENOISE_USE_FINDERS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
