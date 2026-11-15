@@ -1,0 +1,23 @@
+{# Reusable Stat Card Component #}
+{# Parameters: title, value, subtitle, icon, theme (coral|navy|emerald|amber|indigo), link_url, link_text #}
+<div class="stat-card-custom stat-{{ theme|default:'coral' }}">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <div class="text-uppercase small text-muted fw-semibold" style="letter-spacing: 0.05em;">{{ title }}</div>
+      <div class="fs-2 fw-bold text-dark my-1 font-heading">{{ value }}</div>
+      {% if subtitle %}
+        <div class="small text-muted">{{ subtitle }}</div>
+      {% endif %}
+      {% if link_url and link_text %}
+        <div class="mt-2">
+          <a href="{{ link_url }}" class="small fw-semibold text-decoration-none" style="color: var(--color-primary);">
+            {{ link_text }} &rarr;
+          </a>
+        </div>
+      {% endif %}
+    </div>
+    <div class="stat-icon-wrapper" style="background-color: {% if theme == 'emerald' %}#D1FAE5; color: #065F46;{% elif theme == 'navy' %}#E2E8F0; color: #1E293B;{% elif theme == 'amber' %}#FEF3C7; color: #92400E;{% elif theme == 'indigo' %}#E0E7FF; color: #3730A3;{% else %}rgba(235, 122, 91, 0.15); color: #EB7A5B;{% endif %}">
+      <i class="bi bi-{{ icon|default:'bar-chart-fill' }}"></i>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+{# Reusable Global Messages / Alerts Component #}
+{% if messages %}
+  <div class="messages-container my-3">
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert" style="border-radius: 12px;">
+        <div>
+          {% if message.tags == 'error' or message.tags == 'danger' %}
+            <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+          {% elif message.tags == 'success' %}
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+          {% elif message.tags == 'warning' %}
+            <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+          {% else %}
+            <i class="bi bi-info-circle-fill text-info fs-5"></i>
+          {% endif %}
+        </div>
+        <div class="flex-grow-1 font-sans">
+          {{ message }}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

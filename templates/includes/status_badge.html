@@ -1,0 +1,29 @@
+{# Reusable Status Badge Component #}
+{# Parameters: status (PENDING|APPROVED|ALLOTTED|CONFIRMED|REJECTED|CANCELLED|WAITLISTED|EXPIRED), label #}
+{% with s=status|upper %}
+  {% if s == 'PENDING' or s == 'PENDING_PAYMENT' or s == 'OPEN' %}
+    <span class="badge-status badge-status-pending">
+      <i class="bi bi-clock-fill" style="font-size: 0.75rem;"></i>
+      {{ label|default:status|title }}
+    </span>
+  {% elif s == 'APPROVED' or s == 'ALLOTTED' or s == 'CONFIRMED' or s == 'RESOLVED' or s == 'SUCCESS' %}
+    <span class="badge-status badge-status-approved">
+      <i class="bi bi-check-circle-fill" style="font-size: 0.75rem;"></i>
+      {{ label|default:status|title }}
+    </span>
+  {% elif s == 'REJECTED' or s == 'CANCELLED' or s == 'EXPIRED' or s == 'FAILED' %}
+    <span class="badge-status badge-status-rejected">
+      <i class="bi bi-x-circle-fill" style="font-size: 0.75rem;"></i>
+      {{ label|default:status|title }}
+    </span>
+  {% elif s == 'WAITLISTED' or s == 'IN_PROGRESS' %}
+    <span class="badge-status badge-status-waitlisted">
+      <i class="bi bi-hourglass-split" style="font-size: 0.75rem;"></i>
+      {{ label|default:status|title }}
+    </span>
+  {% else %}
+    <span class="badge-status badge-status-pending">
+      {{ label|default:status }}
+    </span>
+  {% endif %}
+{% endwith %}

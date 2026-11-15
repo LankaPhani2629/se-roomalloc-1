@@ -1,0 +1,378 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - VVIT Residences</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Chart.js for Dashboards -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom Theme Design System -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+    <!-- Mobile Backdrop -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar Navigation -->
+        <aside id="dashboardSidebar" class="dashboard-sidebar shadow">
+            <!-- Brand Logo Area -->
+            <a href="{% url 'home' %}" class="sidebar-brand">
+                <img src="{% static 'images/logo.png' %}" alt="VVIT Logo" onerror="this.style.display='none'">
+                <div class="sidebar-brand-text">
+                    VVIT <span>Residences</span>
+                    <div style="font-size: 0.65rem; color: #94A3B8; font-weight: 400; text-transform: uppercase;">
+                        {{ user.get_role_display|default:'Portal' }} Panel
+                    </div>
+                </div>
+            </a>
+
+            <!-- Nav Items based on Role -->
+            <ul class="sidebar-nav">
+                <li class="sidebar-section-title">Main Menu</li>
+                <li>
+                    <a href="{% url 'dashboard_redirect' %}" class="sidebar-link {% if 'dashboard' in request.path or request.path == '/reports/' %}active{% endif %}">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                {% if user.role == 'STUDENT' %}
+                    <li class="sidebar-section-title">Student Housing</li>
+                    <li>
+                        <a href="{% url 'student_profile' %}" class="sidebar-link {% if 'profile' in request.path %}active{% endif %}">
+                            <i class="bi bi-person-badge"></i>
+                            <span>My Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'apply_room' %}" class="sidebar-link {% if 'apply' in request.path %}active{% endif %}">
+                            <i class="bi bi-file-earmark-plus"></i>
+                            <span>Apply for Room</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'student_application_status' %}" class="sidebar-link {% if 'application-status' in request.path %}active{% endif %}">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Application Status</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'student_room_detail' %}" class="sidebar-link {% if 'my-room' in request.path %}active{% endif %}">
+                            <i class="bi bi-door-open"></i>
+                            <span>My Room Details</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'student_room_requests' %}" class="sidebar-link {% if 'requests' in request.path %}active{% endif %}">
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span>Change / Vacate</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'student_fees' %}" class="sidebar-link {% if 'fees' in request.path %}active{% endif %}">
+                            <i class="bi bi-receipt"></i>
+                            <span>Fees & Receipts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'student_complaints' %}" class="sidebar-link {% if 'complaints' in request.path %}active{% endif %}">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>Complaints</span>
+                        </a>
+                    </li>
+
+                {% elif user.role == 'WARDEN' %}
+                    <li class="sidebar-section-title">Warden Operations</li>
+                    <li>
+                        <a href="{% url 'warden_applications' %}" class="sidebar-link {% if 'warden/applications' in request.path %}active{% endif %}">
+                            <i class="bi bi-card-checklist"></i>
+                            <span>Review Applications</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'manual_allocation' %}" class="sidebar-link {% if 'manual-allocation' in request.path %}active{% endif %}">
+                            <i class="bi bi-person-check"></i>
+                            <span>Manual Allotment</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'warden_room_requests' %}" class="sidebar-link {% if 'warden/requests' in request.path %}active{% endif %}">
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span>Room Change / Vacate</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'warden_complaints' %}" class="sidebar-link {% if 'warden' in request.path and 'complaints' in request.path %}active{% endif %}">
+                            <i class="bi bi-chat-left-dots"></i>
+                            <span>Maintenance Requests</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'room_list' %}" class="sidebar-link {% if 'hostels/rooms' in request.path %}active{% endif %}">
+                            <i class="bi bi-door-closed"></i>
+                            <span>Rooms Inventory</span>
+                        </a>
+                    </li>
+
+                {% elif user.role == 'ADMIN' or user.is_superuser %}
+                    <li class="sidebar-section-title">Hostel Infrastructure</li>
+                    <li>
+                        <a href="{% url 'hostel_list' %}" class="sidebar-link {% if 'hostels/' in request.path and 'rooms' not in request.path %}active{% endif %}">
+                            <i class="bi bi-building"></i>
+                            <span>Hostel Blocks</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'room_list' %}" class="sidebar-link {% if 'hostels/rooms' in request.path %}active{% endif %}">
+                            <i class="bi bi-door-open"></i>
+                            <span>Rooms & Inventory</span>
+                        </a>
+                    </li>
+                    
+                    <li class="sidebar-section-title">Allocation Engine</li>
+                    <li>
+                        <a href="{% url 'allocation_rules' %}" class="sidebar-link {% if 'rules' in request.path %}active{% endif %}">
+                            <i class="bi bi-sliders"></i>
+                            <span>Priority Rules</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'application_periods' %}" class="sidebar-link {% if 'periods' in request.path %}active{% endif %}">
+                            <i class="bi bi-calendar2-range"></i>
+                            <span>Application Periods</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'run_auto_allocation' %}" class="sidebar-link {% if 'auto' in request.path %}active{% endif %}">
+                            <i class="bi bi-gear-wide-connected"></i>
+                            <span>Run Auto Allocation</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'allocation_results' %}" class="sidebar-link {% if 'results' in request.path %}active{% endif %}">
+                            <i class="bi bi-list-check"></i>
+                            <span>All Allocations</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-section-title">Management & Analytics</li>
+                    <li>
+                        <a href="{% url 'admin_student_list' %}" class="sidebar-link {% if 'students' in request.path %}active{% endif %}">
+                            <i class="bi bi-people"></i>
+                            <span>Registered Students</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'reports_hub' %}" class="sidebar-link {% if 'reports' in request.path and 'dashboard' not in request.path %}active{% endif %}">
+                            <i class="bi bi-bar-chart-line"></i>
+                            <span>Reports & Exports</span>
+                        </a>
+                    </li>
+
+                {% elif user.role == 'ACCOUNTANT' %}
+                    <li class="sidebar-section-title">Finance & Billing</li>
+                    <li>
+                        <a href="{% url 'fee_structures' %}" class="sidebar-link {% if 'fee-structures' in request.path %}active{% endif %}">
+                            <i class="bi bi-tags"></i>
+                            <span>Fee Schedules</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'record_payment' %}" class="sidebar-link {% if 'record-payment' in request.path %}active{% endif %}">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Record Payment</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'pending_dues' %}" class="sidebar-link {% if 'pending-dues' in request.path %}active{% endif %}">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>Pending Dues</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'payment_history' %}" class="sidebar-link {% if 'history' in request.path %}active{% endif %}">
+                            <i class="bi bi-journal-text"></i>
+                            <span>Payment History</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'reports_hub' %}" class="sidebar-link {% if 'reports' in request.path and 'dashboard' not in request.path %}active{% endif %}">
+                            <i class="bi bi-bar-chart-line"></i>
+                            <span>Financial Reports</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="sidebar-section-title">System</li>
+                <li>
+                    <a href="{% url 'style_guide' %}" class="sidebar-link {% if 'style-guide' in request.path %}active{% endif %}">
+                        <i class="bi bi-palette"></i>
+                        <span>UI Style Guide</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'home' %}" class="sidebar-link">
+                        <i class="bi bi-globe"></i>
+                        <span>Public Home</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Sidebar User Card Footer -->
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <div class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center fw-bold" style="width: 34px; height: 34px; flex-shrink: 0;">
+                            {{ user.username|first|upper }}
+                        </div>
+                        <div class="text-truncate">
+                            <div class="small fw-bold text-white text-truncate">{{ user.username }}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;">{{ user.get_role_display }}</div>
+                        </div>
+                    </div>
+                    <form method="post" action="{% url 'logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link text-muted p-1 hover-text-white" title="Sign Out">
+                            <i class="bi bi-box-arrow-right fs-5"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Viewport -->
+        <div class="dashboard-main">
+            <!-- Topbar Header -->
+            <header class="dashboard-topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-navy d-lg-none btn-sm p-1 px-2" onclick="toggleSidebar()" aria-label="Toggle menu">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <div>
+                        <h5 class="mb-0 font-heading fw-bold text-dark">
+                            {% block header_title %}Dashboard{% endblock %}
+                        </h5>
+                        <small class="text-muted d-none d-sm-inline">{% block header_subtitle %}Welcome to the Residential Management Portal{% endblock %}</small>
+                    </div>
+                </div>
+
+                <!-- Right Topbar Controls -->
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-light position-relative p-2 rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 40px; height: 40px;">
+                            <i class="bi bi-bell text-dark"></i>
+                            {% if unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                    {{ unread_notifications_count }}
+                                </span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 320px; border-radius: 12px;">
+                            <li class="dropdown-header d-flex justify-content-between align-items-center py-2 px-3">
+                                <span class="fw-bold font-heading text-dark">Notifications</span>
+                                {% if unread_notifications_count > 0 %}
+                                    <a href="{% url 'mark_all_read' %}" class="small text-decoration-none" style="color: var(--color-primary);">Mark all read</a>
+                                {% endif %}
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            {% if recent_notifications %}
+                                {% for notif in recent_notifications %}
+                                    <li>
+                                        <a class="dropdown-item py-2 px-3 {% if not notif.is_read %}bg-light fw-medium{% endif %}" href="{% if notif.link %}{{ notif.link }}{% else %}{% url 'notifications_list' %}{% endif %}">
+                                            <div class="small fw-semibold text-truncate text-dark">{{ notif.title }}</div>
+                                            <div class="small text-muted text-truncate">{{ notif.message }}</div>
+                                            <div class="text-end text-muted mt-1" style="font-size: 0.68rem;">{{ notif.created_at|timesince }} ago</div>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li><div class="dropdown-item text-muted small py-3 text-center">No notifications yet</div></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item text-center small fw-bold py-2" style="color: var(--color-primary);" href="{% url 'notifications_list' %}">
+                                    View All Notifications &rarr;
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Role Badge Tag -->
+                    <span class="badge-role-tag badge-role-{{ user.role|lower }} d-none d-md-inline-block">
+                        {{ user.get_role_display }}
+                    </span>
+
+                    <!-- User Profile Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-light d-flex align-items-center gap-2 border px-3 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 10px;">
+                            <i class="bi bi-person-circle fs-5 text-coral"></i>
+                            <span class="fw-semibold small text-dark d-none d-sm-inline">{{ user.username }}</span>
+                            <i class="bi bi-chevron-down small text-muted"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius: 12px;">
+                            <li class="dropdown-header">
+                                Signed in as <strong>{{ user.username }}</strong>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{% url 'change_password' %}">
+                                    <i class="bi bi-key me-2 text-muted"></i>Change Password
+                                </a>
+                            </li>
+                            {% if user.is_staff %}
+                                <li>
+                                    <a class="dropdown-item py-2" href="{% url 'admin:index' %}">
+                                        <i class="bi bi-tools me-2 text-muted"></i>Django Admin
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item py-2 text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Global Alerts -->
+            <div class="px-4 pt-3">
+                {% include "includes/alerts.html" %}
+            </div>
+
+            <!-- Page Content View -->
+            <main class="dashboard-content fade-in">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('dashboardSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.toggle('show');
+            backdrop.classList.toggle('show');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

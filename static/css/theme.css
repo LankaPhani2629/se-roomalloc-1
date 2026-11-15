@@ -1,0 +1,811 @@
+/* ===================================================================
+   HOSTEL ROOM ALLOCATION SYSTEM - DESIGN SYSTEM & THEME
+   Inspired by modern university admission portals: Glassmorphism + Clean Flat UI
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --color-primary: #EB7A5B;
+  --color-primary-dark: #D96248;
+  --color-primary-light: rgba(235, 122, 91, 0.12);
+  --color-bg-light: #FFFFFF;
+  --color-bg-subtle: #F4F6F9;
+  --color-navy-dark: #2C3545;
+  --color-navy-darker: #1E2532;
+  --color-text-main: #1E293B;
+  --color-text-muted: #6B7280;
+  --color-border: #E2E8F0;
+  --glass-bg: rgba(38, 44, 58, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --notice-bg: rgba(24, 28, 38, 0.65);
+
+  /* Status Colors */
+  --badge-pending-bg: #FEF3C7;
+  --badge-pending-text: #92400E;
+  --badge-pending-border: #FDE68A;
+
+  --badge-approved-bg: #D1FAE5;
+  --badge-approved-text: #065F46;
+  --badge-approved-border: #A7F3D0;
+
+  --badge-rejected-bg: #FEE2E2;
+  --badge-rejected-text: #991B1B;
+  --badge-rejected-border: #FECACA;
+
+  --badge-waitlist-bg: #DBEAFE;
+  --badge-waitlist-text: #1E40AF;
+  --badge-waitlist-border: #BFDBFE;
+
+  /* Bootstrap Variable Overrides */
+  --bs-primary: #EB7A5B;
+  --bs-primary-rgb: 235, 122, 91;
+  --bs-body-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --bs-body-color: var(--color-text-main);
+  --bs-body-bg: var(--color-bg-subtle);
+}
+
+/* ===================================================================
+   Typography
+   =================================================================== */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-text-main);
+  background-color: var(--color-bg-subtle);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: 'Poppins', sans-serif;
+  color: var(--color-navy-dark);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+h1 span, h2 span, h3 span, .highlight-coral, .text-coral {
+  color: var(--color-primary) !important;
+}
+
+/* Smooth fade-in animation on load */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* ===================================================================
+   Buttons
+   =================================================================== */
+.btn {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.55rem 1.25rem;
+  transition: all 0.25s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--color-primary-dark) !important;
+  border-color: var(--color-primary-dark) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(235, 122, 91, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: transparent;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(235, 122, 91, 0.25);
+}
+
+.btn-navy, .btn-outline-navy {
+  border-radius: 10px;
+}
+
+.btn-navy {
+  background-color: var(--color-navy-dark);
+  border-color: var(--color-navy-dark);
+  color: #FFFFFF;
+}
+
+.btn-navy:hover {
+  background-color: var(--color-navy-darker);
+  border-color: var(--color-navy-darker);
+  color: #FFFFFF;
+}
+
+.btn-outline-navy {
+  color: var(--color-navy-dark);
+  border-color: var(--color-navy-dark);
+  background: transparent;
+}
+
+.btn-outline-navy:hover {
+  background-color: var(--color-navy-dark);
+  color: #FFFFFF;
+}
+
+/* ===================================================================
+   Form Inputs & Controls
+   =================================================================== */
+.form-control, .form-select {
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  color: var(--color-text-main);
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--color-bg-light);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(235, 122, 91, 0.22);
+  color: var(--color-text-main);
+}
+
+.form-control::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.75;
+}
+
+.input-group-text {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-muted);
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-navy-dark);
+  margin-bottom: 0.4rem;
+}
+
+/* ===================================================================
+   Cards & Content Containers
+   =================================================================== */
+.card {
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+  background-color: var(--color-bg-light);
+  border-bottom: 1px solid var(--color-border);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: var(--color-navy-dark);
+  padding: 1rem 1.25rem;
+}
+
+.card-footer {
+  background-color: var(--color-bg-subtle);
+  border-top: 1px solid var(--color-border);
+  padding: 0.85rem 1.25rem;
+}
+
+/* Stat Cards */
+.stat-card-custom {
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.35rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-custom::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.stat-card-custom:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-custom.stat-coral::before { background: var(--color-primary); }
+.stat-card-custom.stat-navy::before { background: var(--color-navy-dark); }
+.stat-card-custom.stat-emerald::before { background: #10B981; }
+.stat-card-custom.stat-amber::before { background: #F59E0B; }
+.stat-card-custom.stat-indigo::before { background: #6366F1; }
+
+.stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* ===================================================================
+   Glassmorphism (Hero & Auth Pages)
+   =================================================================== */
+.hero-auth-wrapper {
+  position: relative;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('/static/images/campus-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 2.5rem 1rem;
+}
+
+.hero-auth-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(30, 37, 50, 0.88) 0%, rgba(44, 53, 69, 0.82) 100%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.hero-auth-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  color: #FFFFFF;
+  padding: 2.5rem 2.25rem;
+}
+
+.glass-card h1, .glass-card h2, .glass-card h3, .glass-card h4, .glass-card h5 {
+  color: #FFFFFF;
+}
+
+.glass-card .form-label {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.glass-card .form-control, .glass-card .form-select {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #1E293B;
+}
+
+.glass-card .form-control:focus, .glass-card .form-select:focus {
+  background: #FFFFFF;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.25rem rgba(235, 122, 91, 0.4);
+}
+
+.glass-notice-box {
+  background: var(--notice-bg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.9rem 1.15rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* ===================================================================
+   Status Badges (Pills)
+   =================================================================== */
+.badge-status {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 50rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  line-height: 1.2;
+}
+
+.badge-status-pending {
+  background-color: var(--badge-pending-bg);
+  color: var(--badge-pending-text);
+  border: 1px solid var(--badge-pending-border);
+}
+
+.badge-status-approved, .badge-status-allotted, .badge-status-confirmed {
+  background-color: var(--badge-approved-bg);
+  color: var(--badge-approved-text);
+  border: 1px solid var(--badge-approved-border);
+}
+
+.badge-status-rejected, .badge-status-cancelled, .badge-status-expired {
+  background-color: var(--badge-rejected-bg);
+  color: var(--badge-rejected-text);
+  border: 1px solid var(--badge-rejected-border);
+}
+
+.badge-status-waitlisted {
+  background-color: var(--badge-waitlist-bg);
+  color: var(--badge-waitlist-text);
+  border: 1px solid var(--badge-waitlist-border);
+}
+
+/* Role Badges */
+.badge-role-tag {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 50rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-role-admin { background-color: #EDE9FE; color: #5B21B6; }
+.badge-role-warden { background-color: #E0E7FF; color: #3730A3; }
+.badge-role-student { background-color: #FEF3C7; color: #92400E; }
+.badge-role-accountant { background-color: #D1FAE5; color: #065F46; }
+
+/* ===================================================================
+   Tables
+   =================================================================== */
+.table-custom-wrapper {
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.table-custom {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.table-custom thead th {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-navy-dark);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  border-top: none;
+}
+
+.table-custom tbody td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.table-custom tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-custom tbody tr:hover {
+  background-color: rgba(235, 122, 91, 0.04);
+}
+
+/* ===================================================================
+   Sidebar & Dashboard Layout
+   =================================================================== */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--color-bg-subtle);
+}
+
+.dashboard-sidebar {
+  width: 260px;
+  background-color: var(--color-navy-dark);
+  color: #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  z-index: 1040;
+}
+
+.sidebar-brand {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: #FFFFFF;
+}
+
+.sidebar-brand img {
+  height: 38px;
+  object-fit: contain;
+}
+
+.sidebar-brand-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.sidebar-brand-text span {
+  color: var(--color-primary);
+}
+
+.sidebar-nav {
+  padding: 1rem 0.75rem;
+  list-style: none;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-section-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94A3B8;
+  padding: 0.75rem 0.85rem 0.35rem;
+  font-weight: 700;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 9px;
+  color: #CBD5E1;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-link i {
+  font-size: 1.15rem;
+  color: #94A3B8;
+  transition: color 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.sidebar-link:hover i {
+  color: var(--color-primary);
+}
+
+.sidebar-link.active {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(235, 122, 91, 0.35);
+}
+
+.sidebar-link.active i {
+  color: #FFFFFF;
+}
+
+.sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--color-navy-darker);
+}
+
+/* Main Dashboard Body */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.dashboard-topbar {
+  background-color: var(--color-bg-light);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.85rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 2rem 1.75rem;
+}
+
+/* Mobile responsive sidebar */
+@media (max-width: 991.98px) {
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: -260px;
+  }
+  .dashboard-sidebar.show {
+    left: 0;
+  }
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1030;
+    display: none;
+  }
+  .sidebar-backdrop.show {
+    display: block;
+  }
+}
+
+/* ===================================================================
+   Progress Stepper (Student Dashboard)
+   =================================================================== */
+.stepper-wrapper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.stepper-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 3rem;
+  right: 3rem;
+  height: 3px;
+  background-color: var(--color-border);
+  z-index: 1;
+}
+
+.stepper-item {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.step-counter {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--color-bg-light);
+  border: 3px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.step-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.stepper-item.completed .step-counter {
+  background-color: #10B981;
+  border-color: #10B981;
+  color: #FFFFFF;
+}
+
+.stepper-item.completed .step-name {
+  color: #10B981;
+}
+
+.stepper-item.active .step-counter {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(235, 122, 91, 0.25);
+}
+
+.stepper-item.active .step-name {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ===================================================================
+   Room Grid Tile View (Admin Dashboard)
+   =================================================================== */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.room-tile {
+  background: var(--color-bg-light);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  padding: 0.9rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.room-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.room-tile.vacant {
+  border-color: #A7F3D0;
+  background-color: #F0FDF4;
+}
+
+.room-tile.partial {
+  border-color: #FDE68A;
+  background-color: #FFFBEB;
+}
+
+.room-tile.full {
+  border-color: #FECACA;
+  background-color: #FEF2F2;
+}
+
+.room-tile-number {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-navy-dark);
+}
+
+.room-tile-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.room-tile.vacant .room-tile-status { color: #047857; }
+.room-tile.partial .room-tile-status { color: #B45309; }
+.room-tile.full .room-tile-status { color: #B91C1C; }
+
+/* ===================================================================
+   Empty State Component
+   =================================================================== */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--color-bg-light);
+  border: 1px dashed var(--color-border);
+  border-radius: 14px;
+}
+
+.empty-state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* ===================================================================
+   Public Landing Page Styles
+   =================================================================== */
+.hero-landing {
+  position: relative;
+  background: url('/static/images/campus-aerial.jpg') center/cover no-repeat;
+  color: #FFFFFF;
+  padding: 6.5rem 0 5.5rem;
+  overflow: hidden;
+}
+
+.hero-landing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(30, 37, 50, 0.88) 0%, rgba(44, 53, 69, 0.82) 100%);
+}
+
+.hero-landing-content {
+  position: relative;
+  z-index: 2;
+}
+
+.feature-step-card {
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  height: 100%;
+  transition: all 0.25s ease;
+}
+
+.feature-step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-primary);
+}
+
+.feature-step-num {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
