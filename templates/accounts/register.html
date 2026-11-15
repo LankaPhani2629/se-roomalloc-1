@@ -1,121 +1,153 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Student Registration - Hostel Portal{% endblock %}
+{% block title %}Student Registration - VVIT Residences{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-4">
-    <div class="col-lg-8">
-        <div class="card shadow p-4">
-            <div class="text-center mb-4">
-                <div class="rounded-circle bg-warning-subtle text-dark d-inline-flex p-3 mb-2">
-                    <i class="bi bi-person-plus-fill fs-3 text-warning"></i>
+<div class="hero-auth-wrapper py-5">
+    <div class="hero-auth-content">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                <div class="glass-card fade-in">
+                    <!-- Brand & Title -->
+                    <div class="text-center mb-4">
+                        <img src="{% static 'images/logo.png' %}" alt="VVIT Logo" height="48" class="mb-2 bg-white rounded-3 p-1 shadow-sm" onerror="this.style.display='none'">
+                        <h2 class="fw-bold font-heading mb-1 text-white">Student <span class="highlight-coral">Admission &amp; Profile</span></h2>
+                        <p class="text-white-50 small mb-0">Create your verified student residential profile to apply for hostel rooms</p>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small rounded-3 mb-4" style="background: rgba(239, 68, 68, 0.25); border: 1px solid rgba(239, 68, 68, 0.5); color: #fff;">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Section 1: Credentials -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-white-50">
+                                <span class="badge rounded-circle p-2 bg-white text-dark fw-bold" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">1</span>
+                                <h5 class="fw-bold font-heading mb-0 text-white">Portal Credentials</h5>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small">Username / Login ID *</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}<div class="text-warning small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small">Password *</label>
+                                    {{ form.password }}
+                                    {% if form.password.errors %}<div class="text-warning small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small">Confirm Password *</label>
+                                    {{ form.confirm_password }}
+                                    {% if form.confirm_password.errors %}<div class="text-warning small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Academic & Personal -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-white-50">
+                                <span class="badge rounded-circle p-2 bg-white text-dark fw-bold" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">2</span>
+                                <h5 class="fw-bold font-heading mb-0 text-white">Student Academic &amp; Personal Details</h5>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Student Roll / Registration ID *</label>
+                                    {{ form.student_id }}
+                                    {% if form.student_id.errors %}<div class="text-warning small mt-1">{{ form.student_id.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Full Name (As per College Records) *</label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}<div class="text-warning small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small">Gender *</label>
+                                    {{ form.gender }}
+                                    <div class="form-text text-white-50 small" style="font-size: 0.72rem;">Strictly locks allotment to Boys or Girls Hostel.</div>
+                                    {% if form.gender.errors %}<div class="text-warning small mt-1">{{ form.gender.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small">Degree &amp; Department *</label>
+                                    {{ form.course }}
+                                    {% if form.course.errors %}<div class="text-warning small mt-1">{{ form.course.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small">Year of Study *</label>
+                                    {{ form.year }}
+                                    {% if form.year.errors %}<div class="text-warning small mt-1">{{ form.year.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Student Email Address *</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}<div class="text-warning small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Student Mobile Number *</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}<div class="text-warning small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label small">Academic Merit Percentage / Score (%) *</label>
+                                    {{ form.merit_score }}
+                                    <div class="form-text text-white-50 small" style="font-size: 0.72rem;">Used by the rule-based allocation engine for ranking and waitlist placement.</div>
+                                    {% if form.merit_score.errors %}<div class="text-warning small mt-1">{{ form.merit_score.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Guardian Details -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-white-50">
+                                <span class="badge rounded-circle p-2 bg-white text-dark fw-bold" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem;">3</span>
+                                <h5 class="fw-bold font-heading mb-0 text-white">Guardian &amp; Permanent Residence</h5>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Parent / Guardian Name *</label>
+                                    {{ form.guardian_name }}
+                                    {% if form.guardian_name.errors %}<div class="text-warning small mt-1">{{ form.guardian_name.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Guardian Emergency Phone *</label>
+                                    {{ form.guardian_phone }}
+                                    {% if form.guardian_phone.errors %}<div class="text-warning small mt-1">{{ form.guardian_phone.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label small">Permanent Residential Address *</label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}<div class="text-warning small mt-1">{{ form.address.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notice Box -->
+                        <div class="glass-notice-box mb-4">
+                            <i class="bi bi-shield-check text-coral fs-5 flex-shrink-0"></i>
+                            <div>
+                                <strong>Declaration:</strong> I confirm that all provided details and merit scores are accurate. Any falsification leads to forfeiture of accommodation and disciplinary review.
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 pt-3 border-top border-white-50">
+                            <a href="{% url 'login' %}" class="btn btn-outline-light">
+                                <i class="bi bi-arrow-left me-1"></i> Already Registered? Sign In
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 py-2 shadow">
+                                <i class="bi bi-check-circle-fill me-1"></i> Complete Registration
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <h3 class="fw-bold">Student Registration</h3>
-                <p class="text-muted small">Create your student profile to apply for hostel accommodation</p>
             </div>
-
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <form method="post" novalidate>
-                {% csrf_token %}
-
-                <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">1. Account Credentials</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Username *</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Password *</label>
-                        {{ form.password }}
-                        {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Confirm Password *</label>
-                        {{ form.confirm_password }}
-                        {% if form.confirm_password.errors %}<div class="text-danger small">{{ form.confirm_password.errors.0 }}</div>{% endif %}
-                    </div>
-                </div>
-
-                <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">2. Student Academic & Personal Details</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Student / Roll ID *</label>
-                        {{ form.student_id }}
-                        {% if form.student_id.errors %}<div class="text-danger small">{{ form.student_id.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Full Name *</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Gender *</label>
-                        {{ form.gender }}
-                        {% if form.gender.errors %}<div class="text-danger small">{{ form.gender.errors.0 }}</div>{% endif %}
-                        <div class="form-text small">Determines hostel eligibility (Boys/Girls).</div>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label fw-semibold">Course / Degree *</label>
-                        {{ form.course }}
-                        {% if form.course.errors %}<div class="text-danger small">{{ form.course.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">Year of Study *</label>
-                        {{ form.year }}
-                        {% if form.year.errors %}<div class="text-danger small">{{ form.year.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Email Address *</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Phone Number *</label>
-                        {{ form.phone }}
-                        {% if form.phone.errors %}<div class="text-danger small">{{ form.phone.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label fw-semibold">Merit Score / Percentage (%) *</label>
-                        {{ form.merit_score }}
-                        {% if form.merit_score.errors %}<div class="text-danger small">{{ form.merit_score.errors.0 }}</div>{% endif %}
-                        <div class="form-text small">Used for rule-based priority allocation ranking.</div>
-                    </div>
-                </div>
-
-                <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">3. Guardian & Contact Info</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Guardian Name *</label>
-                        {{ form.guardian_name }}
-                        {% if form.guardian_name.errors %}<div class="text-danger small">{{ form.guardian_name.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Guardian Phone *</label>
-                        {{ form.guardian_phone }}
-                        {% if form.guardian_phone.errors %}<div class="text-danger small">{{ form.guardian_phone.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label fw-semibold">Permanent Address *</label>
-                        {{ form.address }}
-                        {% if form.address.errors %}<div class="text-danger small">{{ form.address.errors.0 }}</div>{% endif %}
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                    <a href="{% url 'login' %}" class="btn btn-outline-secondary">Already have an account? Sign In</a>
-                    <button type="submit" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">
-                        <i class="bi bi-check-circle me-1"></i> Submit Registration
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
 {% endblock %}
-

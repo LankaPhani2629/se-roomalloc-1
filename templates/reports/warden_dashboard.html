@@ -1,158 +1,249 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Warden Dashboard - Hostel Portal{% endblock %}
+{% block title %}Warden Dashboard - VVIT Residences{% endblock %}
+{% block header_title %}Resident Warden Dashboard{% endblock %}
+{% block header_subtitle %}Application verification, room change approvals, and hostel discipline management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Quick Action Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-shield-check text-primary me-2"></i>Warden Dashboard</h2>
-        <p class="text-muted mb-0">Application verification, room allocations, change requests, and resident complaints.</p>
+        <h4 class="fw-bold font-heading mb-0 text-dark">Hostel Operations Overview</h4>
+        <small class="text-muted">Overseeing student verification, room inventory, and maintenance tickets</small>
     </div>
     <div class="d-flex gap-2">
-        <a href="{% url 'manual_allocation' %}" class="btn btn-primary fw-bold shadow-sm">
-            <i class="bi bi-person-check me-1"></i> Manual Allotment
+        <a href="{% url 'manual_allocation' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-check-fill me-1"></i> Manual Allotment
+        </a>
+        <a href="{% url 'warden_applications' %}" class="btn btn-outline-navy">
+            <i class="bi bi-card-checklist me-1"></i> All Applications
         </a>
     </div>
 </div>
 
-<!-- Stat Cards -->
+<!-- Stat Cards (4 Cards) -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm border-start border-4 border-warning">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Pending Applications</div>
-                    <div class="fs-3 fw-bold text-dark">{{ pending_apps }}</div>
-                    <a href="{% url 'warden_applications' %}?status=PENDING" class="small text-decoration-none">Review Applications &rarr;</a>
-                </div>
-                <div class="rounded-circle bg-warning-subtle text-warning p-3">
-                    <i class="bi bi-card-checklist fs-4"></i>
-                </div>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Pending Applications" value=pending_apps subtitle="Awaiting your verification" icon="card-checklist" theme="amber" link_url="/applications/warden/applications/?status=PENDING" link_text="Review Queue" %}
     </div>
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm border-start border-4 border-primary">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Room Change Requests</div>
-                    <div class="fs-3 fw-bold text-dark">{{ pending_room_requests }}</div>
-                    <a href="{% url 'warden_room_requests' %}?status=PENDING" class="small text-decoration-none">Process Requests &rarr;</a>
-                </div>
-                <div class="rounded-circle bg-primary-subtle text-primary p-3">
-                    <i class="bi bi-arrow-left-right fs-4"></i>
-                </div>
-            </div>
-        </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Room Change / Vacate" value=pending_room_requests subtitle="Student transfer requests" icon="arrow-left-right" theme="coral" link_url="/allocations/warden/requests/?status=PENDING" link_text="Process Requests" %}
     </div>
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm border-start border-4 border-danger">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Active Complaints</div>
-                    <div class="fs-3 fw-bold text-danger">{{ open_complaints }}</div>
-                    <a href="{% url 'warden_complaints' %}?status=OPEN" class="small text-decoration-none">View Complaints &rarr;</a>
-                </div>
-                <div class="rounded-circle bg-danger-subtle text-danger p-3">
-                    <i class="bi bi-tools fs-4"></i>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Active Complaints" value=open_complaints subtitle="Maintenance & repair issues" icon="tools" theme="indigo" link_url="/complaints/warden/?status=OPEN" link_text="Maintenance Board" %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% with vacant_count=0 %}
+            <div class="stat-card-custom stat-emerald">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-uppercase small text-muted fw-semibold" style="letter-spacing: 0.05em;">Assigned Hostels</div>
+                        <div class="fs-2 fw-bold text-dark my-1 font-heading">{{ assigned_hostels.count }} Blocks</div>
+                        <div class="small text-muted">Active resident complexes</div>
+                        <div class="mt-2">
+                            <a href="{% url 'room_list' %}" class="small fw-semibold text-decoration-none" style="color: #10B981;">
+                                View Rooms &rarr;
+                            </a>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper" style="background-color: #D1FAE5; color: #065F46;">
+                        <i class="bi bi-door-open-fill"></i>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endwith %}
     </div>
 </div>
 
 <div class="row g-4">
-    <!-- Pending Applications for Review -->
-    <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
+    <!-- Applications Table with Approve/Reject & Remarks Modal -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">Applications Awaiting Verification</h5>
-                <a href="{% url 'warden_applications' %}" class="small text-decoration-none">View All</a>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-check-fill text-coral fs-5"></i>
+                    <h5 class="fw-bold font-heading mb-0 text-dark">Applications Awaiting Verification</h5>
+                </div>
+                <a href="{% url 'warden_applications' %}" class="small text-decoration-none" style="color: var(--color-primary);">View All ({{ pending_apps }}) &rarr;</a>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Student</th>
-                            <th>Gender</th>
-                            <th>Merit</th>
-                            <th>Room Type</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for app in recent_pending_apps %}
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
                             <tr>
-                                <td>
-                                    <div class="fw-semibold">{{ app.student.name }}</div>
-                                    <div class="small text-muted">{{ app.student.student_id }}</div>
-                                </td>
-                                <td>
-                                    <span class="badge {% if app.student.gender == 'MALE' %}bg-primary{% else %}bg-danger{% endif %}">
-                                        {{ app.student.get_gender_display }}
-                                    </span>
-                                </td>
-                                <td><span class="badge bg-secondary">{{ app.student.merit_score }}%</span></td>
-                                <td class="small">{{ app.get_preferred_room_type_display }}</td>
-                                <td class="text-end">
-                                    <a href="{% url 'warden_application_review' app.pk %}" class="btn btn-sm btn-primary">Review</a>
-                                </td>
+                                <th>Student</th>
+                                <th>Gender</th>
+                                <th>Merit</th>
+                                <th>Preferred Type</th>
+                                <th class="text-end">Actions</th>
                             </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">No pending applications right now.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for app in recent_pending_apps %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold font-heading text-dark">{{ app.student.name }}</div>
+                                        <div class="text-muted small">{{ app.student.student_id }} &bull; Yr {{ app.student.year }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge-role-tag {% if app.student.gender == 'MALE' %}badge-role-admin{% else %}badge-role-warden{% endif %}">
+                                            {{ app.student.get_gender_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border fw-bold">{{ app.student.merit_score }}%</span>
+                                    </td>
+                                    <td class="small">{{ app.get_preferred_room_type_display }}</td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <button type="button" class="btn btn-primary btn-sm px-2 py-1" data-bs-toggle="modal" data-bs-target="#reviewModal{{ app.pk }}" title="Quick Review">
+                                                <i class="bi bi-check2-square"></i> Review
+                                            </button>
+                                            <a href="{% url 'warden_application_review' app.pk %}" class="btn btn-outline-navy btn-sm px-2 py-1" title="Full Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+
+                                        <!-- Remarks & Decision Modal -->
+                                        <div class="modal fade" id="reviewModal{{ app.pk }}" tabindex="-1" aria-labelledby="modalLabel{{ app.pk }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered text-start">
+                                                <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+                                                    <form method="post" action="{% url 'warden_application_review' app.pk %}">
+                                                        {% csrf_token %}
+                                                        <div class="modal-header border-bottom">
+                                                            <h5 class="modal-title font-heading fw-bold text-dark" id="modalLabel{{ app.pk }}">
+                                                                Review Application #{{ app.pk }}
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body p-4">
+                                                            <div class="p-3 bg-light rounded-3 mb-3">
+                                                                <div class="d-flex justify-content-between mb-1">
+                                                                    <strong>Student:</strong>
+                                                                    <span>{{ app.student.name }} ({{ app.student.student_id }})</span>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between mb-1">
+                                                                    <strong>Gender / Course:</strong>
+                                                                    <span>{{ app.student.get_gender_display }} &bull; {{ app.student.course }}</span>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between">
+                                                                    <strong>Merit Score:</strong>
+                                                                    <span class="fw-bold text-coral">{{ app.student.merit_score }}%</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Verification Decision *</label>
+                                                                <select name="status" class="form-select" required>
+                                                                    <option value="APPROVED" selected>Approve Application</option>
+                                                                    <option value="WAITLISTED">Waitlist Application</option>
+                                                                    <option value="REJECTED">Reject Application</option>
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Warden Remarks / Justification</label>
+                                                                <textarea name="remarks" class="form-control" rows="3" placeholder="Add verification notes or reason..."></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer border-top bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                                                            <button type="button" class="btn btn-outline-navy btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary btn-sm">Submit Decision</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle text-success fs-3 d-block mb-1"></i>
+                                        All pending student applications have been reviewed!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Pending Room Change Requests -->
-    <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
+    <!-- Room Requests & Complaints Panel -->
+    <div class="col-lg-5">
+        <!-- Room Change Requests -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">Recent Change / Vacate Requests</h5>
-                <a href="{% url 'warden_room_requests' %}" class="small text-decoration-none">View All</a>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-left-right text-coral fs-5"></i>
+                    <h6 class="fw-bold font-heading mb-0 text-dark">Recent Transfer / Vacate Requests</h6>
+                </div>
+                <a href="{% url 'warden_room_requests' %}" class="small text-decoration-none" style="color: var(--color-primary);">All &rarr;</a>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Student</th>
-                            <th>Type</th>
-                            <th>Current Room</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for req in recent_room_requests %}
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
                             <tr>
-                                <td>
-                                    <div class="fw-semibold">{{ req.student.name }}</div>
-                                    <div class="small text-muted">{{ req.student.student_id }}</div>
-                                </td>
-                                <td>
-                                    <span class="badge {% if req.request_type == 'CHANGE' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
-                                        {{ req.get_request_type_display }}
-                                    </span>
-                                </td>
-                                <td class="small">{{ req.current_allocation.room.hostel.name }} Rm {{ req.current_allocation.room.room_no }}</td>
-                                <td class="text-end">
-                                    <a href="{% url 'warden_process_request' req.pk %}" class="btn btn-sm btn-outline-primary">Process</a>
-                                </td>
+                                <th>Student</th>
+                                <th>Type</th>
+                                <th class="text-end">Action</th>
                             </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">No pending room change requests.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for req in recent_room_requests %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold text-dark small">{{ req.student.name }}</div>
+                                        <small class="text-muted">Room {{ req.current_allocation.room.room_no }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge-role-tag {% if req.request_type == 'CHANGE' %}badge-role-admin{% else %}badge-role-student{% endif %}">
+                                            {{ req.get_request_type_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'warden_process_request' req.pk %}" class="btn btn-outline-navy btn-sm py-1 px-2">
+                                            Process &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-3 text-muted small">No pending room change requests.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Hostels Overview -->
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold font-heading mb-0 text-dark"><i class="bi bi-building text-coral me-2"></i>Assigned Hostel Blocks</h6>
+            </div>
+            <div class="card-body p-3">
+                {% for h in assigned_hostels %}
+                    <div class="p-3 bg-light rounded-3 mb-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold text-dark font-heading">{{ h.name }}</div>
+                            <small class="text-muted">{{ h.get_hostel_type_display }} &bull; {{ h.rooms.count }} Rooms</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge-role-tag badge-role-admin">{{ h.total_occupied }} / {{ h.total_capacity }} Beds</span>
+                            <div class="small text-success mt-1 fw-semibold">{{ h.total_vacant }} Vacant</div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted small mb-0">No hostels directly assigned to your warden account.</p>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

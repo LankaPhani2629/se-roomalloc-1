@@ -1,109 +1,429 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Welcome - College Hostel Room Allocation System{% endblock %}
+{% block title %}Absolute Comfort, Absolute Discipline - VVIT Residences{% endblock %}
 
 {% block content %}
-<div class="row align-items-center py-5">
-    <div class="col-lg-7 mb-4 mb-lg-0">
-        <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
-            <i class="bi bi-mortarboard-fill me-1"></i> Campus Residential Services
-        </span>
-        <h1 class="display-4 fw-bold text-dark lh-sm mb-3">
-            Smart & Transparent <br><span class="text-primary">Hostel Room Allocation</span>
-        </h1>
-        <p class="lead text-muted mb-4">
-            A comprehensive, rule-based web platform for college student housing management. Featuring gender-segregated allocations, strict capacity limits, automated rule-based allotments, fee validation, room change workflows, and complaint tracking.
-        </p>
+<!-- 1. Hero Section -->
+<section class="hero-landing">
+    <div class="container-fluid px-lg-5 hero-landing-content">
+        <div class="row align-items-center py-4">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(235, 122, 91, 0.2); border: 1px solid rgba(235, 122, 91, 0.4);">
+                    <i class="bi bi-mortarboard-fill text-coral"></i>
+                    <span class="small fw-semibold text-white">Vasireddy Venkatadri International Technological University</span>
+                </div>
+                <h1 class="display-3 fw-bold text-white mb-3 font-heading" style="line-height: 1.15;">
+                    Absolute Comfort,<br>Absolute <span class="highlight-coral">Discipline</span>
+                </h1>
+                <p class="lead text-white-50 mb-4" style="max-width: 640px; font-size: 1.15rem;">
+                    State-of-the-art campus residences with merit-based automated room allocation, strict gender-segregated blocks, transparent fee management, and 24/7 security.
+                </p>
 
-        {% if not user.is_authenticated %}
-            <div class="d-flex flex-wrap gap-3">
-                <a href="{% url 'register' %}" class="btn btn-warning btn-lg px-4 fw-bold shadow-sm">
-                    <i class="bi bi-person-plus me-2"></i>Student Registration
-                </a>
-                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4 shadow-sm">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Portal
-                </a>
-            </div>
-        {% else %}
-            <div class="d-flex flex-wrap gap-3">
-                <a href="{% url 'dashboard_redirect' %}" class="btn btn-primary btn-lg px-4 fw-bold shadow-sm">
-                    <i class="bi bi-speedometer2 me-2"></i>Go to Your Dashboard
-                </a>
-            </div>
-        {% endif %}
-    </div>
-
-    <div class="col-lg-5">
-        <div class="card shadow p-4 border-0 bg-white">
-            <h4 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-lock-fill text-primary me-2"></i>System Modules</h4>
-            <div class="list-group list-group-flush">
-                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
-                    <div class="rounded-circle bg-primary-subtle p-3 text-primary">
-                        <i class="bi bi-person-badge fs-5"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0 fw-bold">Role-Based Access Control</h6>
-                        <small class="text-muted">Tailored portals for Student, Warden, Administrator, and Accountant.</small>
-                    </div>
-                </div>
-                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
-                    <div class="rounded-circle bg-success-subtle p-3 text-success">
-                        <i class="bi bi-diagram-3 fs-5"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0 fw-bold">Automated Priority Allocation</h6>
-                        <small class="text-muted">Merit, year of study, and gender-locked hostel allotment service.</small>
-                    </div>
-                </div>
-                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
-                    <div class="rounded-circle bg-warning-subtle p-3 text-warning">
-                        <i class="bi bi-credit-card fs-5"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0 fw-bold">Fee Verification & Due Dates</h6>
-                        <small class="text-muted">Allotment confirmed only upon fee payment before due date expiry.</small>
-                    </div>
-                </div>
-                <div class="list-group-item d-flex align-items-center gap-3 px-0 py-3">
-                    <div class="rounded-circle bg-danger-subtle p-3 text-danger">
-                        <i class="bi bi-arrow-repeat fs-5"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0 fw-bold">Room Change & Vacate Requests</h6>
-                        <small class="text-muted">Atomic room transfer and occupancy management with audit tracking.</small>
-                    </div>
+                <div class="d-flex flex-wrap gap-3">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 shadow">
+                            <i class="bi bi-file-earmark-plus-fill me-1"></i> Apply for Hostel
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4" style="border-radius: 10px;">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Resident Sign In
+                        </a>
+                    {% else %}
+                        <a href="{% url 'dashboard_redirect' %}" class="btn btn-primary btn-lg px-4 shadow">
+                            <i class="bi bi-speedometer2 me-1"></i> Open Dashboard ({{ user.username }})
+                        </a>
+                    {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- Business Rules Overview -->
-<div class="row g-4 mt-2">
-    <div class="col-md-3">
-        <div class="card h-100 p-3 border-top border-4 border-primary">
-            <div class="fw-bold fs-5 text-primary mb-2"><i class="bi bi-gender-ambiguous me-2"></i>Gender Enforced</div>
-            <p class="small text-muted mb-0">Boys and girls are restricted exclusively to their respective hostels at DB level.</p>
+            <div class="col-lg-4">
+                <!-- Floating Glass Quick Fact Card -->
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold font-heading mb-3 text-white">
+                        <i class="bi bi-shield-check text-coral me-2"></i>Campus Standards
+                    </h5>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255,255,255,0.15); flex-shrink: 0;">
+                                <i class="bi bi-gender-ambiguous fs-5 text-coral"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-white small">Strict Gender Separation</div>
+                                <div class="text-white-50" style="font-size: 0.78rem;">Independent Boys and Girls complexes</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255,255,255,0.15); flex-shrink: 0;">
+                                <i class="bi bi-diagram-3-fill fs-5 text-coral"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-white small">Rule-Based Allocation</div>
+                                <div class="text-white-50" style="font-size: 0.78rem;">Merit, year of study &amp; room preference</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: rgba(255,255,255,0.15); flex-shrink: 0;">
+                                <i class="bi bi-shield-lock fs-5 text-coral"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-white small">Zero Over-Booking</div>
+                                <div class="text-white-50" style="font-size: 0.78rem;">Enforced DB constraint on bed capacity</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-notice-box mt-3">
+                        <i class="bi bi-info-circle-fill text-coral"></i>
+                        <span>Allotment confirmed only upon timely fee receipt.</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card h-100 p-3 border-top border-4 border-success">
-            <div class="fw-bold fs-5 text-success mb-2"><i class="bi bi-people-fill me-2"></i>Capacity Guard</div>
-            <p class="small text-muted mb-0">Database check constraint guarantees occupied count never exceeds room capacity.</p>
+</section>
+
+<!-- 2. How It Works (4 Steps) -->
+<section id="how-it-works" class="py-5 bg-white border-bottom">
+    <div class="container-fluid px-lg-5">
+        <div class="text-center mb-5">
+            <span class="badge-role-tag badge-role-warden mb-2">Simple Process</span>
+            <h2 class="display-6 fw-bold font-heading mb-2">How Room Allocation <span class="highlight-coral">Works</span></h2>
+            <p class="text-muted mx-auto" style="max-width: 600px;">
+                Our transparent 4-stage workflow guarantees zero bias, instant audit trails, and stress-free check-in for every resident.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-step-card">
+                    <div class="feature-step-num">1</div>
+                    <h5 class="fw-bold font-heading mb-2 text-dark">Register &amp; Apply</h5>
+                    <p class="text-muted small mb-0">
+                        Create your student profile with merit percentage, course, guardian contacts, and select your room type preferences.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-step-card">
+                    <div class="feature-step-num">2</div>
+                    <h5 class="fw-bold font-heading mb-2 text-dark">Warden Verification</h5>
+                    <p class="text-muted small mb-0">
+                        The resident warden reviews academic standing, verifies credentials, and approves applications into the allocation pool.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-step-card">
+                    <div class="feature-step-num">3</div>
+                    <h5 class="fw-bold font-heading mb-2 text-dark">Rule Allocation</h5>
+                    <p class="text-muted small mb-0">
+                        Automated algorithm allocates gender-locked rooms based on administrator priority ranking and real-time inventory.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-step-card">
+                    <div class="feature-step-num">4</div>
+                    <h5 class="fw-bold font-heading mb-2 text-dark">Fee &amp; Check-In</h5>
+                    <p class="text-muted small mb-0">
+                        Pay semester hostel fees before the due date deadline. Download your official stamped receipt and move into your room.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card h-100 p-3 border-top border-4 border-warning">
-            <div class="fw-bold fs-5 text-warning mb-2"><i class="bi bi-1-circle-fill me-2"></i>One Active Room</div>
-            <p class="small text-muted mb-0">A student can hold only one active room allotment across the entire campus.</p>
+</section>
+
+<!-- 3. Hostel Facilities -->
+<section class="py-5" style="background-color: var(--color-bg-subtle);">
+    <div class="container-fluid px-lg-5">
+        <div class="text-center mb-5">
+            <span class="badge-role-tag badge-role-admin mb-2">World-Class Infrastructure</span>
+            <h2 class="display-6 fw-bold font-heading mb-2">Hostel <span class="highlight-coral">Facilities &amp; Life</span></h2>
+            <p class="text-muted mx-auto" style="max-width: 620px;">
+                Equipped with modern amenities to ensure high academic performance, safety, physical wellness, and comfort.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-hover-lift h-100 p-4 border-0">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3" style="background-color: rgba(235, 122, 91, 0.15); width: 56px; height: 56px; align-items: center; justify-content: center;">
+                        <i class="bi bi-wifi fs-4 text-coral"></i>
+                    </div>
+                    <h5 class="fw-bold font-heading text-dark mb-2">High-Speed Wi-Fi &amp; Study Rooms</h5>
+                    <p class="text-muted small mb-0">Gigabit optical-fiber campus network in every room, plus air-conditioned 24/7 digital quiet reading lounges.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-hover-lift h-100 p-4 border-0">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3" style="background-color: rgba(16, 185, 129, 0.15); width: 56px; height: 56px; align-items: center; justify-content: center;">
+                        <i class="bi bi-cup-hot-fill fs-4 text-success"></i>
+                    </div>
+                    <h5 class="fw-bold font-heading text-dark mb-2">Hygienic Dining &amp; Cafeteria</h5>
+                    <p class="text-muted small mb-0">Nutritious multi-cuisine mess managed by professional chefs, providing hygienic vegetarian and non-vegetarian meals.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-hover-lift h-100 p-4 border-0">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3" style="background-color: rgba(44, 53, 69, 0.15); width: 56px; height: 56px; align-items: center; justify-content: center;">
+                        <i class="bi bi-camera-video-fill fs-4" style="color: var(--color-navy-dark);"></i>
+                    </div>
+                    <h5 class="fw-bold font-heading text-dark mb-2">Biometric &amp; 24/7 CCTV Security</h5>
+                    <p class="text-muted small mb-0">Smart turnstile biometric access gates, dedicated resident wardens, and round-the-clock trained security officers.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-hover-lift h-100 p-4 border-0">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3" style="background-color: rgba(245, 158, 11, 0.15); width: 56px; height: 56px; align-items: center; justify-content: center;">
+                        <i class="bi bi-snow fs-4 text-warning"></i>
+                    </div>
+                    <h5 class="fw-bold font-heading text-dark mb-2">AC &amp; Non-AC Room Options</h5>
+                    <p class="text-muted small mb-0">Single executive, double sharing, and triple sharing rooms with personal cupboards, study desks, and attached bathrooms.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-hover-lift h-100 p-4 border-0">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3" style="background-color: rgba(99, 102, 241, 0.15); width: 56px; height: 56px; align-items: center; justify-content: center;">
+                        <i class="bi bi-droplet-half fs-4 text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold font-heading text-dark mb-2">Solar Hot Water &amp; RO Water</h5>
+                    <p class="text-muted small mb-0">Eco-friendly solar water heating systems on all terraces and multi-stage commercial RO drinking water dispensers.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-hover-lift h-100 p-4 border-0">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3" style="background-color: rgba(239, 68, 68, 0.15); width: 56px; height: 56px; align-items: center; justify-content: center;">
+                        <i class="bi bi-heart-pulse-fill fs-4 text-danger"></i>
+                    </div>
+                    <h5 class="fw-bold font-heading text-dark mb-2">Medical Center &amp; Sports Complex</h5>
+                    <p class="text-muted small mb-0">On-campus 24-hour health center with ambulance service, gymnasium, indoor badminton, and sports grounds.</p>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card h-100 p-3 border-top border-4 border-info">
-            <div class="fw-bold fs-5 text-info mb-2"><i class="bi bi-bell-fill me-2"></i>In-App & Email</div>
-            <p class="small text-muted mb-0">Instant in-app alerts and notifications whenever application or room state changes.</p>
+</section>
+
+<!-- 4. Hostel Blocks -->
+<section id="hostel-blocks" class="py-5 bg-white border-bottom">
+    <div class="container-fluid px-lg-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+            <div>
+                <span class="badge-role-tag badge-role-student mb-2">Residential Halls</span>
+                <h2 class="display-6 fw-bold font-heading mb-1">Campus Hostel <span class="highlight-coral">Blocks</span></h2>
+                <p class="text-muted mb-0">Independent residential towers with full-time wardens and surveillance.</p>
+            </div>
+            <div>
+                <a href="{% url 'register' %}" class="btn btn-outline-navy btn-sm">Check Eligibility &rarr;</a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm overflow-hidden h-100">
+                    <div class="p-4" style="background: linear-gradient(135deg, #1E293B 0%, #2C3545 100%); color: #FFFFFF;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge-status badge-status-approved">Open for Booking</span>
+                            <span class="badge-role-tag badge-role-admin">BOYS COMPLEX</span>
+                        </div>
+                        <h4 class="fw-bold font-heading text-white mb-1">Aryabhata Boys Hostel</h4>
+                        <p class="text-white-50 small mb-0">Warden: Dr. K. Ramesh Rao &bull; Blocks A &amp; B</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 text-center mb-3">
+                            <div class="col-4 border-end">
+                                <div class="fs-4 fw-bold font-heading text-dark">150</div>
+                                <div class="small text-muted">Total Rooms</div>
+                            </div>
+                            <div class="col-4 border-end">
+                                <div class="fs-4 fw-bold font-heading text-coral">350</div>
+                                <div class="small text-muted">Bed Capacity</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold font-heading text-success">Active</div>
+                                <div class="small text-muted">Allotment Open</div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Features AC Double &amp; Non-AC Triple sharing rooms, gym, cricket nets, reading room, and fast internet access.
+                        </p>
+                        <a href="{% url 'register' %}" class="btn btn-primary w-100">Apply for Boys Hostel</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm overflow-hidden h-100">
+                    <div class="p-4" style="background: linear-gradient(135deg, #1E2532 0%, #3B2A3A 100%); color: #FFFFFF;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge-status badge-status-approved">Open for Booking</span>
+                            <span class="badge-role-tag badge-role-warden">GIRLS COMPLEX</span>
+                        </div>
+                        <h4 class="fw-bold font-heading text-white mb-1">Kalpana Chawla Girls Hostel</h4>
+                        <p class="text-white-50 small mb-0">Warden: Dr. P. Lakshmi &bull; Blocks C &amp; D</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 text-center mb-3">
+                            <div class="col-4 border-end">
+                                <div class="fs-4 fw-bold font-heading text-dark">120</div>
+                                <div class="small text-muted">Total Rooms</div>
+                            </div>
+                            <div class="col-4 border-end">
+                                <div class="fs-4 fw-bold font-heading text-coral">280</div>
+                                <div class="small text-muted">Bed Capacity</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fs-4 fw-bold font-heading text-success">Active</div>
+                                <div class="small text-muted">Allotment Open</div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            Features AC Double, Single Executive, biometric turnstile security, dedicated dining hall, indoor games, and infirmary.
+                        </p>
+                        <a href="{% url 'register' %}" class="btn btn-primary w-100">Apply for Girls Hostel</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- 5. Fee Structure Table -->
+<section id="fee-structure" class="py-5" style="background-color: var(--color-bg-subtle);">
+    <div class="container-fluid px-lg-5">
+        <div class="text-center mb-5">
+            <span class="badge-role-tag badge-role-accountant mb-2">Transparent Finance</span>
+            <h2 class="display-6 fw-bold font-heading mb-2">Hostel Fee <span class="highlight-coral">Information</span></h2>
+            <p class="text-muted mx-auto" style="max-width: 600px;">
+                Annual and semester fee structures configured per room type. Allotments are officially confirmed only after payment.
+            </p>
+        </div>
+
+        <div class="table-custom-wrapper shadow-sm">
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Room Category</th>
+                            <th>Occupancy</th>
+                            <th>Amenities Included</th>
+                            <th>Semester Fee (₹)</th>
+                            <th>Due Window</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="fw-bold font-heading text-dark">AC Single Executive</div>
+                                <div class="small text-muted">Individual privacy with attached bath</div>
+                            </td>
+                            <td>Single (1 Bed)</td>
+                            <td>Air Conditioning, Personal Desk, High Speed Wi-Fi, Wardrobe</td>
+                            <td class="fw-bold text-coral fs-6">₹85,000</td>
+                            <td>Within 7 days of allotment</td>
+                            <td><span class="badge-status badge-status-approved">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="fw-bold font-heading text-dark">AC Double Sharing</div>
+                                <div class="small text-muted">Dual occupant premium room</div>
+                            </td>
+                            <td>Double (2 Beds)</td>
+                            <td>Air Conditioning, 2 Study Desks, 2 Wardrobes, Balcony</td>
+                            <td class="fw-bold text-coral fs-6">₹65,000</td>
+                            <td>Within 7 days of allotment</td>
+                            <td><span class="badge-status badge-status-approved">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="fw-bold font-heading text-dark">Non-AC Double Sharing</div>
+                                <div class="small text-muted">Spacious well-ventilated room</div>
+                            </td>
+                            <td>Double (2 Beds)</td>
+                            <td>Ceiling Fans, Study Tables, Wardrobes, Attached Bathroom</td>
+                            <td class="fw-bold text-coral fs-6">₹52,000</td>
+                            <td>Within 7 days of allotment</td>
+                            <td><span class="badge-status badge-status-approved">Available</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="fw-bold font-heading text-dark">Non-AC Triple Sharing</div>
+                                <div class="small text-muted">Economical comfortable room</div>
+                            </td>
+                            <td>Triple (3 Beds)</td>
+                            <td>3 Beds, 3 Study Units, 3 Lockers, Common Bath Facility</td>
+                            <td class="fw-bold text-coral fs-6">₹42,000</td>
+                            <td>Within 7 days of allotment</td>
+                            <td><span class="badge-status badge-status-approved">Available</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 6. Rules and Regulations -->
+<section id="rules" class="py-5 bg-white border-bottom">
+    <div class="container-fluid px-lg-5">
+        <div class="text-center mb-5">
+            <span class="badge-role-tag badge-role-admin mb-2">Code of Conduct</span>
+            <h2 class="display-6 fw-bold font-heading mb-2">Rules &amp; <span class="highlight-coral">Regulations</span></h2>
+            <p class="text-muted mx-auto" style="max-width: 620px;">
+                Adherence to the residential handbook ensures a safe, respectful, and academically productive living environment for everyone.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="p-4 rounded-3 border bg-light h-100">
+                    <h5 class="fw-bold font-heading text-dark mb-3">
+                        <i class="bi bi-clock-fill text-coral me-2"></i>Curfew &amp; Campus Timings
+                    </h5>
+                    <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
+                        <li>Hostel main gates close promptly at <strong>9:00 PM</strong> for all residents.</li>
+                        <li>Late entry requires prior written approval from the assigned Resident Warden.</li>
+                        <li>Overnight leave or home visits must be requested in writing by the student's registered guardian.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 rounded-3 border bg-light h-100">
+                    <h5 class="fw-bold font-heading text-dark mb-3">
+                        <i class="bi bi-shield-slash-fill text-danger me-2"></i>Zero Tolerance Policies
+                    </h5>
+                    <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
+                        <li><strong>Ragging</strong> is strictly prohibited and punishable under law with immediate rustication.</li>
+                        <li>Possession or consumption of alcohol, tobacco, or contraband is strictly banned.</li>
+                        <li>Unauthorized electrical appliances (heaters, heavy electric stoves) are not permitted in dorms.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 rounded-3 border bg-light h-100">
+                    <h5 class="fw-bold font-heading text-dark mb-3">
+                        <i class="bi bi-door-closed-fill text-primary me-2"></i>Room Allotment &amp; Vacating
+                    </h5>
+                    <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
+                        <li>A student may possess only <strong>one active room allotment</strong> across the university.</li>
+                        <li>Room swapping without official warden approval and system transfer request is prohibited.</li>
+                        <li>Residents must hand over all room inventory in good condition upon vacating.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-4 rounded-3 border bg-light h-100">
+                    <h5 class="fw-bold font-heading text-dark mb-3">
+                        <i class="bi bi-cash-coin text-success me-2"></i>Fee Payment &amp; Renewal
+                    </h5>
+                    <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
+                        <li>Allotment provisional holds expire automatically if fees are unpaid past the deadline.</li>
+                        <li>Fee payment receipt must be preserved and presented upon hostel check-in.</li>
+                        <li>All financial dues must be settled to obtain the academic semester no-dues certificate.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
-

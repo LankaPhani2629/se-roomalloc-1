@@ -1,188 +1,296 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Administrator Dashboard - Hostel Portal{% endblock %}
+{% block title %}Administrator Dashboard - VVIT Residences{% endblock %}
+{% block header_title %}Campus Housing Administration{% endblock %}
+{% block header_subtitle %}System-wide residential analytics, inventory control, and rule-based allocation management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Top Action Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Administrator Dashboard</h2>
-        <p class="text-muted mb-0">System-wide residential statistics, capacity tracking, and quick controls.</p>
+        <h4 class="fw-bold font-heading mb-0 text-dark">Executive Housing Overview</h4>
+        <small class="text-muted">Real-time room occupancy, priority allocation engine, and revenue metrics</small>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{% url 'run_auto_allocation' %}" class="btn btn-primary fw-bold shadow-sm">
-            <i class="bi bi-gear-fill me-1"></i> Auto Allocate
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'run_auto_allocation' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-gear-wide-connected me-1"></i> Run Auto Allocation
         </a>
-        <a href="{% url 'reports_hub' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-bar-chart-line me-1"></i> Reports Hub
+        <a href="{% url 'hostel_create' %}" class="btn btn-navy">
+            <i class="bi bi-building-add me-1"></i> Add Hostel Block
+        </a>
+        <a href="{% url 'room_create' %}" class="btn btn-outline-navy">
+            <i class="bi bi-door-open me-1"></i> Add Room
         </a>
     </div>
 </div>
 
-<!-- Key Stat Cards -->
+<!-- 4 Key Stat Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-start border-4 border-primary">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Total Hostels</div>
-                    <div class="fs-3 fw-bold text-dark">{{ total_hostels }} Blocks</div>
-                    <div class="small text-muted">{{ total_rooms }} Rooms</div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Total Capacity" value=total_capacity subtitle=total_rooms|stringformat:"s Rooms in "|add:total_hostels|stringformat:"s Blocks" icon="buildings" theme="navy" link_url="/hostels/" link_text="View Hostels" %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Occupied Beds" value=total_occupied subtitle="Currently assigned students" icon="people-fill" theme="coral" link_url="/allocations/results/" link_text="Allocation Roster" %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Available Vacancy" value=total_vacant subtitle="Ready for new allotment" icon="door-open-fill" theme="emerald" link_url="/hostels/rooms/" link_text="Room Inventory" %}
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        {% include "includes/stat_card.html" with title="Pending Reviews" value=pending_applications_count subtitle=pending_dues_count|stringformat:"s Pending Fee Dues" icon="hourglass-split" theme="amber" link_url="/applications/warden/applications/?status=PENDING" link_text="Review Applications" %}
+    </div>
+</div>
+
+<!-- Analytics & Occupancy Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Chart.js Occupancy Doughnut -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold font-heading mb-0 text-dark"><i class="bi bi-pie-chart-fill text-coral me-2"></i>Bed Occupancy Ratio</h5>
+                <span class="badge-role-tag badge-role-admin">Real-Time</span>
+            </div>
+            <div class="card-body p-4 d-flex flex-column justify-content-center">
+                <div style="max-height: 240px; position: relative;">
+                    <canvas id="occupancyDoughnutChart"></canvas>
                 </div>
-                <div class="rounded-circle bg-primary-subtle text-primary p-3">
-                    <i class="bi bi-buildings fs-4"></i>
+                <div class="row text-center mt-4 pt-3 border-top g-2">
+                    <div class="col-6 border-end">
+                        <div class="small text-muted text-uppercase fw-semibold">Occupied</div>
+                        <div class="fs-4 fw-bold font-heading text-coral">{{ total_occupied }} Beds</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="small text-muted text-uppercase fw-semibold">Available</div>
+                        <div class="fs-4 fw-bold font-heading text-success">{{ total_vacant }} Beds</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-start border-4 border-success">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Occupied Beds</div>
-                    <div class="fs-3 fw-bold text-success">{{ total_occupied }} / {{ total_capacity }}</div>
-                    <div class="small text-muted">Beds in use</div>
-                </div>
-                <div class="rounded-circle bg-success-subtle text-success p-3">
-                    <i class="bi bi-people-fill fs-4"></i>
-                </div>
+
+    <!-- Hostel Blocks Bar Chart & Summary -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold font-heading mb-0 text-dark"><i class="bi bi-bar-chart-line-fill text-coral me-2"></i>Block-wise Capacity vs Occupancy</h5>
+                <a href="{% url 'reports_hub' %}" class="small text-decoration-none" style="color: var(--color-primary);">Exports &rarr;</a>
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-start border-4 border-info">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Vacant Beds</div>
-                    <div class="fs-3 fw-bold text-info">{{ total_vacant }} Beds</div>
-                    <div class="small text-muted">Ready for allocation</div>
-                </div>
-                <div class="rounded-circle bg-info-subtle text-info p-3">
-                    <i class="bi bi-door-open fs-4"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm border-start border-4 border-warning">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Pending Review</div>
-                    <div class="fs-3 fw-bold text-warning">{{ pending_applications_count }} Apps</div>
-                    <div class="small text-muted">{{ pending_dues_count }} fee dues</div>
-                </div>
-                <div class="rounded-circle bg-warning-subtle text-warning p-3">
-                    <i class="bi bi-clock-history fs-4"></i>
+            <div class="card-body p-4">
+                <div style="max-height: 270px; position: relative;">
+                    <canvas id="blockBarChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Hostel Blocks Breakdown -->
-    <div class="col-lg-7">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="bi bi-building me-2 text-primary"></i>Hostel Block Occupancy</h5>
-                <a href="{% url 'hostel_list' %}" class="small text-decoration-none fw-semibold">View All Blocks &rarr;</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Hostel</th>
-                            <th>Type</th>
-                            <th>Warden</th>
-                            <th>Rooms</th>
-                            <th>Occupied / Capacity</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for h in hostels_summary %}
-                            <tr>
-                                <td class="fw-bold text-primary">{{ h.name }}</td>
-                                <td>
-                                    <span class="badge {% if h.hostel_type == 'BOYS' %}bg-primary{% else %}bg-danger{% endif %}">
-                                        {{ h.get_hostel_type_display }}
-                                    </span>
-                                </td>
-                                <td class="small">{{ h.warden.get_full_name|default:h.warden.username|default:"Unassigned" }}</td>
-                                <td>{{ h.rooms.count }}</td>
-                                <td>
-                                    <div class="fw-semibold">{{ h.total_occupied }} / {{ h.total_capacity }}</div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar {% if h.total_occupied == h.total_capacity %}bg-danger{% else %}bg-success{% endif %}"
-                                             role="progressbar"
-                                             style="width: {% if h.total_capacity %}{% widthratio h.total_occupied h.total_capacity 100 %}{% else %}0{% endif %}%;">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if h.total_vacant > 0 %}
-                                        <span class="badge bg-success-subtle text-success">{{ h.total_vacant }} Free</span>
-                                    {% else %}
-                                        <span class="badge bg-danger-subtle text-danger">Full</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">No hostels registered yet.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+<!-- Hostel Management & Search Table -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-building text-coral fs-5"></i>
+            <h5 class="fw-bold font-heading mb-0 text-dark">Hostel Blocks Inventory &amp; Wardens</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" id="hostelFilterInput" class="form-control form-control-sm" placeholder="Filter blocks..." style="max-width: 200px;" onkeyup="filterHostelsTable()">
+            <a href="{% url 'hostel_create' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i> Add Block
+            </a>
         </div>
     </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table-custom" id="hostelsTable">
+                <thead>
+                    <tr>
+                        <th>Hostel Block</th>
+                        <th>Type</th>
+                        <th>Assigned Warden</th>
+                        <th>Rooms</th>
+                        <th>Occupancy Bar</th>
+                        <th>Free Beds</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in hostels_summary %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold font-heading text-dark">{{ h.name }}</div>
+                            </td>
+                            <td>
+                                <span class="badge-role-tag {% if h.hostel_type == 'BOYS' %}badge-role-admin{% else %}badge-role-warden{% endif %}">
+                                    {{ h.get_hostel_type_display }}
+                                </span>
+                            </td>
+                            <td class="small">
+                                {{ h.warden.get_full_name|default:h.warden.username|default:"Unassigned" }}
+                            </td>
+                            <td>{{ h.rooms.count }}</td>
+                            <td style="min-width: 160px;">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>{{ h.total_occupied }} / {{ h.total_capacity }} Beds</span>
+                                    <span>{% if h.total_capacity %}{% widthratio h.total_occupied h.total_capacity 100 %}%{% else %}0%{% endif %}</span>
+                                </div>
+                                <div class="progress" style="height: 6px; border-radius: 10px;">
+                                    <div class="progress-bar" role="progressbar" style="background-color: var(--color-primary); width: {% if h.total_capacity %}{% widthratio h.total_occupied h.total_capacity 100 %}{% else %}0{% endif %}%;"></div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if h.total_vacant > 0 %}
+                                    <span class="badge-status badge-status-approved">{{ h.total_vacant }} Free</span>
+                                {% else %}
+                                    <span class="badge-status badge-status-rejected">Fully Booked</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'hostel_update' h.pk %}" class="btn btn-outline-navy btn-sm py-1 px-2" title="Edit Hostel">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No hostel blocks registered yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-    <!-- Quick Shortcuts & Recent Apps -->
-    <div class="col-lg-5">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3">
-                <h5 class="fw-bold mb-0"><i class="bi bi-lightning-charge text-warning me-2"></i>Quick Administration</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{% url 'hostel_create' %}" class="btn btn-outline-primary text-start">
-                        <i class="bi bi-building-add me-2"></i> Add New Hostel Block
-                    </a>
-                    <a href="{% url 'room_create' %}" class="btn btn-outline-primary text-start">
-                        <i class="bi bi-door-open me-2"></i> Add Room to Inventory
-                    </a>
-                    <a href="{% url 'allocation_rules' %}" class="btn btn-outline-secondary text-start">
-                        <i class="bi bi-sliders me-2"></i> Configure Priority & Allocation Rules
-                    </a>
-                    <a href="{% url 'application_periods' %}" class="btn btn-outline-secondary text-start">
-                        <i class="bi bi-calendar-event me-2"></i> Open / Close Application Period
-                    </a>
+<!-- Room Grid View with Color by Occupancy (Vacant, Partially Filled, Full) -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <h5 class="fw-bold font-heading mb-0 text-dark">
+                <i class="bi bi-grid-3x3-gap-fill text-coral me-2"></i>Live Room Inventory Grid
+            </h5>
+            <small class="text-muted">Interactive visual room map: green (vacant), amber (partially filled), red (full)</small>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge-status badge-status-approved"><span class="rounded-circle d-inline-block p-1 bg-success me-1"></span> Vacant</span>
+            <span class="badge-status badge-status-pending"><span class="rounded-circle d-inline-block p-1 bg-warning me-1"></span> Partially Filled</span>
+            <span class="badge-status badge-status-rejected"><span class="rounded-circle d-inline-block p-1 bg-danger me-1"></span> Full</span>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        {% for h in hostels_summary %}
+            <div class="mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                    <h6 class="fw-bold font-heading text-dark mb-0">{{ h.name }}</h6>
+                    <span class="badge-role-tag {% if h.hostel_type == 'BOYS' %}badge-role-admin{% else %}badge-role-warden{% endif %}">
+                        {{ h.get_hostel_type_display }}
+                    </span>
+                    <small class="text-muted ms-auto">{{ h.rooms.count }} Rooms &bull; {{ h.total_vacant }} Vacant Beds</small>
+                </div>
+
+                <div class="room-grid">
+                    {% for room in h.rooms.all %}
+                        <div class="room-tile {% if room.occupied_count == 0 %}vacant{% elif room.occupied_count >= room.capacity %}full{% else %}partial{% endif %}" title="Room {{ room.room_no }} (Floor {{ room.floor_no }}): {{ room.occupied_count }}/{{ room.capacity }} beds occupied">
+                            <div class="room-tile-number">{{ room.room_no }}</div>
+                            <div class="small text-muted" style="font-size: 0.7rem;">Fl {{ room.floor_no }} &bull; {{ room.get_room_type_display|truncatechars:12 }}</div>
+                            <div class="room-tile-status">
+                                {% if room.occupied_count == 0 %}
+                                    <i class="bi bi-check-circle-fill"></i> Vacant ({{ room.capacity }})
+                                {% elif room.occupied_count >= room.capacity %}
+                                    <i class="bi bi-x-circle-fill"></i> Full ({{ room.capacity }})
+                                {% else %}
+                                    <i class="bi bi-people-fill"></i> {{ room.occupied_count }}/{{ room.capacity }} Beds
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-muted small py-2">No rooms registered under this block.</div>
+                    {% endfor %}
                 </div>
             </div>
-        </div>
-
-        <!-- Recent Applications -->
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
-                <h6 class="fw-bold mb-0">Recent Applications</h6>
-            </div>
-            <div class="list-group list-group-flush">
-                {% for app in recent_applications %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-                        <div>
-                            <div class="fw-semibold">{{ app.student.name }}</div>
-                            <div class="small text-muted">{{ app.student.student_id }} &bull; {{ app.get_preferred_room_type_display }}</div>
-                        </div>
-                        <span class="badge {% if app.status == 'APPROVED' %}bg-success{% elif app.status == 'PENDING' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                            {{ app.get_status_display }}
-                        </span>
-                    </div>
-                {% empty %}
-                    <div class="p-3 text-center text-muted small">No applications received yet.</div>
-                {% endfor %}
-            </div>
-        </div>
+        {% empty %}
+            {% include "includes/empty_state.html" with icon="buildings" title="No Hostel Blocks Configured" description="Add hostel blocks and rooms to populate the visual room grid." action_url="/hostels/create/" action_text="Create Block" %}
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+    // Occupancy Doughnut Chart
+    const occCtx = document.getElementById('occupancyDoughnutChart');
+    if (occCtx) {
+        new Chart(occCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Occupied Beds', 'Vacant Beds'],
+                datasets: [{
+                    data: [{{ total_occupied }}, {{ total_vacant }}],
+                    backgroundColor: ['#EB7A5B', '#10B981'],
+                    hoverBackgroundColor: ['#D96248', '#059669'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Inter', weight: 500 } }
+                    }
+                },
+                cutout: '72%'
+            }
+        });
+    }
+
+    // Block Bar Chart
+    const barCtx = document.getElementById('blockBarChart');
+    if (barCtx) {
+        const blockNames = [{% for h in hostels_summary %}'{{ h.name }}',{% endfor %}];
+        const blockCap = [{% for h in hostels_summary %}{{ h.total_capacity }},{% endfor %}];
+        const blockOcc = [{% for h in hostels_summary %}{{ h.total_occupied }},{% endfor %}];
+
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: blockNames,
+                datasets: [
+                    {
+                        label: 'Capacity',
+                        data: blockCap,
+                        backgroundColor: '#E2E8F0',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Occupied',
+                        data: blockOcc,
+                        backgroundColor: '#EB7A5B',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: '#F1F5F9' } }
+                },
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // Client-side filter for hostels table
+    function filterHostelsTable() {
+        const input = document.getElementById('hostelFilterInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#hostelsTable tbody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

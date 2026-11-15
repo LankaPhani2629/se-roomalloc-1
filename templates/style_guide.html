@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Design System & Style Guide - VVIT Residences{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Header Banner -->
+    <div class="card bg-white border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge-role-tag badge-role-admin mb-2">Design System v2.0</span>
+                <h1 class="display-6 fw-bold font-heading mb-1">
+                    Design System &amp; <span class="highlight-coral">Component Library</span>
+                </h1>
+                <p class="text-muted mb-0">
+                    Inspired by modern university admission portals: Glassmorphism + Clean Flat UI. Built with Bootstrap 5 and custom CSS tokens.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'home' %}" class="btn btn-outline-navy me-2">Public Home</a>
+                <a href="{% url 'login' %}" class="btn btn-primary">Login Showcase</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Color Tokens Palette -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-palette-fill text-coral me-2"></i>1. Color Palette Tokens</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="p-3 rounded-3 text-white text-center shadow-sm" style="background-color: #EB7A5B;">
+                        <div class="fw-bold">Primary Coral</div>
+                        <small class="opacity-75">#EB7A5B</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="p-3 rounded-3 text-white text-center shadow-sm" style="background-color: #D96248;">
+                        <div class="fw-bold">Primary Dark</div>
+                        <small class="opacity-75">#D96248</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="p-3 rounded-3 text-white text-center shadow-sm" style="background-color: #2C3545;">
+                        <div class="fw-bold">Navy Dark</div>
+                        <small class="opacity-75">#2C3545</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="p-3 rounded-3 text-white text-center shadow-sm" style="background-color: #1E293B;">
+                        <div class="fw-bold">Text Main</div>
+                        <small class="opacity-75">#1E293B</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="p-3 rounded-3 text-white text-center shadow-sm" style="background-color: #6B7280;">
+                        <div class="fw-bold">Text Muted</div>
+                        <small class="opacity-75">#6B7280</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <div class="p-3 rounded-3 text-dark text-center shadow-sm border" style="background-color: #F4F6F9;">
+                        <div class="fw-bold">Bg Subtle</div>
+                        <small class="text-muted">#F4F6F9</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Typography & Heading Spans -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-fonts text-coral me-2"></i>2. Typography &amp; Coral Key Word Highlights</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h1 class="display-5 fw-bold mb-2">Display Heading <span class="highlight-coral">Highlighted</span></h1>
+                    <h2 class="fw-bold mb-2">Section Heading <span class="highlight-coral">Coral Word</span></h2>
+                    <h3 class="fw-bold mb-2">Card Heading <span class="highlight-coral">Focus</span></h3>
+                    <p class="text-muted">
+                        Body copy uses Google Font <strong>Inter</strong> for maximum readability, while headings use <strong>Poppins</strong>. Dark navy/charcoal (#1E293B) text on crisp white and subtle backgrounds gives a modern, elevated aesthetic.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="text-uppercase small fw-bold text-muted mb-2">Heading Tokens Preview</div>
+                        <div class="font-heading fs-4 fw-bold text-dark">Absolute Comfort, Absolute <span class="highlight-coral">Discipline</span></div>
+                        <div class="font-heading fs-5 fw-bold text-dark mt-2">Smart &amp; Transparent <span class="highlight-coral">Room Allocation</span></div>
+                        <div class="font-heading fs-6 fw-bold text-dark mt-2">Verified Bed <span class="highlight-coral">Inventory</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Buttons & Controls -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-hand-index-thumb-fill text-coral me-2"></i>3. Button Components</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-3 align-items-center">
+                <button type="button" class="btn btn-primary">
+                    <i class="bi bi-check-circle-fill"></i> Primary Button
+                </button>
+                <button type="button" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-right"></i> Outline Primary
+                </button>
+                <button type="button" class="btn btn-navy">
+                    <i class="bi bi-shield-lock-fill"></i> Navy Button
+                </button>
+                <button type="button" class="btn btn-outline-navy">
+                    <i class="bi bi-gear-fill"></i> Outline Navy
+                </button>
+                <button type="button" class="btn btn-primary btn-sm">
+                    Small Primary
+                </button>
+                <button type="button" class="btn btn-outline-navy btn-sm">
+                    Small Navy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Status Badges & Pills -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-award-fill text-coral me-2"></i>4. Status Badges (Soft Pills)</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-3 align-items-center">
+                {% include "includes/status_badge.html" with status="PENDING" label="Pending Verification" %}
+                {% include "includes/status_badge.html" with status="APPROVED" label="Approved" %}
+                {% include "includes/status_badge.html" with status="ALLOTTED" label="Room Allotted" %}
+                {% include "includes/status_badge.html" with status="CONFIRMED" label="Fee Confirmed" %}
+                {% include "includes/status_badge.html" with status="WAITLISTED" label="Waitlisted (Priority 4)" %}
+                {% include "includes/status_badge.html" with status="REJECTED" label="Application Rejected" %}
+                {% include "includes/status_badge.html" with status="EXPIRED" label="Payment Expired" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Stat Cards Grid -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-bar-chart-fill text-coral me-2"></i>5. Dashboard Stat Cards</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    {% include "includes/stat_card.html" with title="Total Occupancy" value="284 Beds" subtitle="Across 4 Blocks" icon="people-fill" theme="coral" %}
+                </div>
+                <div class="col-md-3">
+                    {% include "includes/stat_card.html" with title="Vacant Rooms" value="36 Beds" subtitle="Ready for allocation" icon="door-open-fill" theme="emerald" %}
+                </div>
+                <div class="col-md-3">
+                    {% include "includes/stat_card.html" with title="Pending Reviews" value="18 Apps" subtitle="Awaiting Warden Approval" icon="clock-history" theme="amber" %}
+                </div>
+                <div class="col-md-3">
+                    {% include "includes/stat_card.html" with title="Fee Collections" value="₹12.4 L" subtitle="Current Semester" icon="cash-coin" theme="navy" %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Form Inputs & Interactive Controls -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-ui-checks text-coral me-2"></i>6. Form Inputs &amp; Focus Ring</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" placeholder="e.g. Rahul Sharma" value="Rahul Sharma">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Select Preferred Room Type</label>
+                    <select class="form-select">
+                        <option>AC Double Sharing (₹65,000/sem)</option>
+                        <option>Non-AC Triple Sharing (₹45,000/sem)</option>
+                        <option>AC Single Executive (₹85,000/sem)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Roll Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" class="form-control" placeholder="22VV1A0501" value="22VV1A0501">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Glassmorphism Showcase -->
+    <div class="card mb-4 border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-transparency text-coral me-2"></i>7. Glassmorphism Hero Card &amp; Notice Box</h5>
+        </div>
+        <div class="p-4" style="background: url('/static/images/campus-bg.jpg') center/cover; position: relative;">
+            <div style="position: absolute; inset:0; background: rgba(30, 37, 50, 0.85);"></div>
+            <div class="row justify-content-center position-relative py-3">
+                <div class="col-md-7 col-lg-5">
+                    <div class="glass-card">
+                        <div class="text-center mb-3">
+                            <img src="{% static 'images/logo.png' %}" alt="Logo" height="42" class="mb-2" onerror="this.style.display='none'">
+                            <h4 class="fw-bold font-heading mb-1 text-white">Student <span class="highlight-coral">Portal Login</span></h4>
+                            <p class="small text-white-50">Sign in to manage your hostel room</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" placeholder="Student ID or username">
+                        </div>
+                        <button class="btn btn-primary w-100 py-2 mb-3">Sign In &rarr;</button>
+                        <div class="glass-notice-box">
+                            <i class="bi bi-info-circle-fill text-coral fs-5"></i>
+                            <div><strong>Notice:</strong> Room allotment is subject to hostel rules and timely fee payment before due date.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Tables -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-table text-coral me-2"></i>8. Clean Data Table Component</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Hostel Block</th>
+                            <th>Category</th>
+                            <th>Total Beds</th>
+                            <th>Occupied</th>
+                            <th>Vacancy</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold font-heading text-dark">Aryabhata Hall</td>
+                            <td><span class="badge-role-tag badge-role-admin">Boys Hostel</span></td>
+                            <td>120</td>
+                            <td>112</td>
+                            <td>8</td>
+                            <td>{% include "includes/status_badge.html" with status="APPROVED" label="8 Vacant" %}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold font-heading text-dark">Kalpana Chawla Hall</td>
+                            <td><span class="badge-role-tag badge-role-warden">Girls Hostel</span></td>
+                            <td>100</td>
+                            <td>100</td>
+                            <td>0</td>
+                            <td>{% include "includes/status_badge.html" with status="REJECTED" label="Fully Booked" %}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. Empty State Component -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold font-heading mb-0"><i class="bi bi-inbox-fill text-coral me-2"></i>9. Empty State Component</h5>
+        </div>
+        <div class="card-body">
+            {% include "includes/empty_state.html" with icon="door-open" title="No Pending Room Transfer Requests" description="All student change and vacate requests have been processed by the warden." action_url="#" action_text="View History" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

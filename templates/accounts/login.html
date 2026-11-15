@@ -1,53 +1,101 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Sign In - Hostel Portal{% endblock %}
+{% block title %}Sign In - VVIT Residences{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-4">
-    <div class="col-md-5 col-lg-4">
-        <div class="card shadow p-4">
-            <div class="text-center mb-4">
-                <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex p-3 mb-2">
-                    <i class="bi bi-person-lock fs-3"></i>
-                </div>
-                <h3 class="fw-bold">Sign In</h3>
-                <p class="text-muted small">Access your hostel account</p>
-            </div>
-
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Username</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        {{ form.username }}
+<div class="hero-auth-wrapper">
+    <div class="hero-auth-content">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="glass-card fade-in">
+                    <!-- Brand & Header -->
+                    <div class="text-center mb-4">
+                        <img src="{% static 'images/logo.png' %}" alt="VVIT Logo" height="52" class="mb-2 bg-white rounded-3 p-1 shadow-sm" onerror="this.style.display='none'">
+                        <h3 class="fw-bold font-heading mb-1 text-white">Residential <span class="highlight-coral">Portal Sign In</span></h3>
+                        <p class="text-white-50 small mb-0">Role-aware access for Students, Wardens &amp; Officers</p>
                     </div>
-                    {% if form.username.errors %}
-                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
-                    {% endif %}
-                </div>
 
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-key"></i></span>
-                        {{ form.password }}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small rounded-3 mb-3" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fff;">
+                            {{ form.non_field_errors.0 }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Username or Student ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-0"><i class="bi bi-person-fill text-muted"></i></span>
+                                <input type="text" name="username" class="form-control" placeholder="e.g. admin, warden, or student_boy" required autofocus id="id_username" value="{{ form.username.value|default:'' }}">
+                            </div>
+                            {% if form.username.errors %}
+                                <div class="text-warning small mt-1">{{ form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-semibold mb-0">Password</label>
+                                <a href="{% url 'change_password' %}" class="small text-white-50 text-decoration-none">Forgot password?</a>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-0"><i class="bi bi-lock-fill text-muted"></i></span>
+                                <input type="password" name="password" class="form-control" placeholder="••••••••" required id="id_password">
+                            </div>
+                            {% if form.password.errors %}
+                                <div class="text-warning small mt-1">{{ form.password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mb-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+                        </button>
+                    </form>
+
+                    <!-- Notice Box -->
+                    <div class="glass-notice-box mb-3">
+                        <i class="bi bi-info-circle-fill text-coral fs-5 flex-shrink-0"></i>
+                        <div>
+                            <strong>Official Notice:</strong> Room allotment is strictly subject to institutional hostel regulations, merit score verification, and timely semester fee payment.
+                        </div>
                     </div>
-                    {% if form.password.errors %}
-                        <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
-                    {% endif %}
+
+                    <div class="pt-3 border-top border-white-50 text-center small text-white-50">
+                        New student? <a href="{% url 'register' %}" class="fw-bold text-white text-decoration-none highlight-coral">Register profile here &rarr;</a>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-                </button>
-            </form>
+                <!-- Demo Accounts Helper Drawer -->
+                <div class="text-center mt-3">
+                    <button class="btn btn-sm btn-outline-light px-3" type="button" data-bs-toggle="collapse" data-bs-target="#demoAccountsHint">
+                        <i class="bi bi-key-fill me-1"></i> Quick Demo Logins
+                    </button>
+                    <div class="collapse mt-2 text-start" id="demoAccountsHint">
+                        <div class="p-3 rounded-3" style="background: rgba(30, 37, 50, 0.9); border: 1px solid rgba(255,255,255,0.15); color: #E2E8F0; font-size: 0.8rem;">
+                            <div class="fw-bold text-coral mb-2">Available Demo Credentials:</div>
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                <span>Administrator</span><code>admin / admin123</code>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                <span>Warden</span><code>warden / warden123</code>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                <span>Student (Male)</span><code>student_boy / student123</code>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                <span>Student (Female)</span><code>student_girl / student123</code>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span>Accountant</span><code>accountant / accountant123</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="mt-4 pt-3 border-top text-center small text-muted">
-                New student? <a href="{% url 'register' %}" class="fw-bold text-decoration-none">Register here</a>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

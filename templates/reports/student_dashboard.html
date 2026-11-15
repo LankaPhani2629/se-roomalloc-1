@@ -1,128 +1,256 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Student Dashboard - Campus Hostel{% endblock %}
+{% block title %}Student Dashboard - VVIT Residences{% endblock %}
+{% block header_title %}Student Housing Portal{% endblock %}
+{% block header_subtitle %}Overview of your room allocation, fee status, and resident services{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-1">Welcome, {{ student.name }}!</h2>
-        <p class="text-muted mb-0">Roll / Student ID: <strong>{{ student.student_id }}</strong> &bull; Course: {{ student.course }} (Year {{ student.year }})</p>
+<!-- Welcome Banner -->
+<div class="card border-0 shadow-sm p-4 mb-4" style="background: linear-gradient(135deg, #2C3545 0%, #1E2532 100%); color: #FFFFFF; border-radius: 16px;">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge-role-tag badge-role-student mb-2">Resident Student</span>
+            <h2 class="fw-bold font-heading mb-1 text-white">Welcome, {{ student.name }}!</h2>
+            <p class="text-white-50 mb-0">
+                Roll No: <strong>{{ student.student_id }}</strong> &bull; {{ student.course }} (Year {{ student.year }}) &bull; Merit Score: <strong>{{ student.merit_score }}%</strong>
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            {% if not active_allocation %}
+                <a href="{% url 'apply_room' %}" class="btn btn-primary shadow">
+                    <i class="bi bi-file-earmark-plus-fill me-1"></i> Apply for Room
+                </a>
+            {% else %}
+                <a href="{% url 'student_room_requests' %}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left-right me-1"></i> Request Room Change
+                </a>
+            {% endif %}
+        </div>
     </div>
-    {% if not active_allocation %}
-        <a href="{% url 'apply_room' %}" class="btn btn-warning fw-bold shadow-sm">
-            <i class="bi bi-file-earmark-plus me-1"></i> Apply for Room
-        </a>
-    {% endif %}
 </div>
 
-<!-- Active Room Status Banner -->
-{% if active_allocation %}
-    <div class="card shadow p-4 mb-4 border-0 bg-white">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <span class="badge {% if active_allocation.room.hostel.hostel_type == 'BOYS' %}bg-primary{% else %}bg-danger{% endif %} mb-2">
-                    {{ active_allocation.room.hostel.get_hostel_type_display }}
-                </span>
-                <h3 class="fw-bold text-dark mb-1">{{ active_allocation.room.hostel.name }}</h3>
-                <p class="text-muted mb-2">Room <strong>{{ active_allocation.room.room_no }}</strong> &bull; Floor {{ active_allocation.room.floor_no }} &bull; {{ active_allocation.room.get_room_type_display }}</p>
-                <div class="small">
-                    Allotment Status: 
-                    {% if active_allocation.status == 'CONFIRMED' %}
-                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Confirmed</span>
-                    {% elif active_allocation.status == 'PENDING_PAYMENT' %}
-                        <span class="badge bg-warning text-dark"><i class="bi bi-clock-history me-1"></i>Pending Fee Payment</span>
-                        <span class="text-danger ms-2 fw-semibold">Pay before {{ active_allocation.due_date|date:"M d, Y" }}</span>
-                    {% else %}
-                        <span class="badge bg-secondary">{{ active_allocation.get_status_display }}</span>
-                    {% endif %}
-                </div>
+<!-- Application Lifecycle Stepper -->
+<div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px;">
+    <h6 class="fw-bold font-heading text-dark mb-4"><i class="bi bi-diagram-3-fill text-coral me-2"></i>Housing Allotment Lifecycle</h6>
+    <div class="stepper-wrapper">
+        <!-- 1. Applied -->
+        <div class="stepper-item {% if recent_app %}completed{% else %}active{% endif %}">
+            <div class="step-counter">{% if recent_app %}<i class="bi bi-check-lg"></i>{% else %}1{% endif %}</div>
+            <div class="step-name">1. Applied</div>
+            <small class="text-muted" style="font-size: 0.7rem;">{% if recent_app %}{{ recent_app.application_date|date:"M d" }}{% else %}Not submitted{% endif %}</small>
+        </div>
+
+        <!-- 2. Verified -->
+        <div class="stepper-item {% if recent_app.status == 'APPROVED' or active_allocation %}completed{% elif recent_app.status == 'PENDING' %}active{% endif %}">
+            <div class="step-counter">{% if recent_app.status == 'APPROVED' or active_allocation %}<i class="bi bi-check-lg"></i>{% else %}2{% endif %}</div>
+            <div class="step-name">2. Verified</div>
+            <small class="text-muted" style="font-size: 0.7rem;">
+                {% if recent_app.status == 'APPROVED' %}Approved{% elif recent_app.status == 'WAITLISTED' %}Waitlisted{% elif recent_app %}Under Review{% else %}Pending{% endif %}
+            </small>
+        </div>
+
+        <!-- 3. Allotted -->
+        <div class="stepper-item {% if active_allocation %}completed{% elif recent_app.status == 'APPROVED' %}active{% endif %}">
+            <div class="step-counter">{% if active_allocation %}<i class="bi bi-check-lg"></i>{% else %}3{% endif %}</div>
+            <div class="step-name">3. Allotted</div>
+            <small class="text-muted" style="font-size: 0.7rem;">
+                {% if active_allocation %}Room {{ active_allocation.room.room_no }}{% else %}In Queue{% endif %}
+            </small>
+        </div>
+
+        <!-- 4. Fee Paid -->
+        <div class="stepper-item {% if active_allocation.status == 'CONFIRMED' %}completed{% elif active_allocation.status == 'PENDING_PAYMENT' %}active{% endif %}">
+            <div class="step-counter">{% if active_allocation.status == 'CONFIRMED' %}<i class="bi bi-check-lg"></i>{% else %}4{% endif %}</div>
+            <div class="step-name">4. Fee Paid</div>
+            <small class="text-muted" style="font-size: 0.7rem;">
+                {% if active_allocation.status == 'CONFIRMED' %}Confirmed{% elif active_allocation %}Due{% else %}Pending{% endif %}
+            </small>
+        </div>
+
+        <!-- 5. Checked-in -->
+        <div class="stepper-item {% if active_allocation.check_in_date %}completed{% elif active_allocation.status == 'CONFIRMED' %}active{% endif %}">
+            <div class="step-counter">{% if active_allocation.check_in_date %}<i class="bi bi-check-lg"></i>{% else %}5{% endif %}</div>
+            <div class="step-name">5. Checked-in</div>
+            <small class="text-muted" style="font-size: 0.7rem;">
+                {% if active_allocation.check_in_date %}{{ active_allocation.check_in_date|date:"M d" }}{% else %}Ready{% endif %}
+            </small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Active Room Card -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold font-heading mb-0"><i class="bi bi-door-open-fill text-coral me-2"></i>My Room Details</h5>
+                {% if active_allocation %}
+                    {% include "includes/status_badge.html" with status=active_allocation.status %}
+                {% endif %}
             </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex flex-column gap-2">
-                <a href="{% url 'student_room_detail' %}" class="btn btn-primary fw-bold">
-                    <i class="bi bi-door-open me-1"></i> View Room Details
-                </a>
-                <a href="{% url 'student_room_requests' %}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left-right me-1"></i> Change / Vacate Request
-                </a>
-                {% if active_allocation.status == 'PENDING_PAYMENT' %}
-                    <a href="{% url 'student_fees' %}" class="btn btn-warning fw-bold btn-sm">
-                        <i class="bi bi-credit-card me-1"></i> Pay Fee (₹{{ expected_fee|default:"Due" }})
-                    </a>
+            <div class="card-body p-4">
+                {% if active_allocation %}
+                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+                        <div>
+                            <span class="badge-role-tag {% if active_allocation.room.hostel.hostel_type == 'BOYS' %}badge-role-admin{% else %}badge-role-warden{% endif %} mb-1">
+                                {{ active_allocation.room.hostel.get_hostel_type_display }}
+                            </span>
+                            <h3 class="fw-bold font-heading text-dark mb-0">{{ active_allocation.room.hostel.name }}</h3>
+                            <div class="text-muted small">Floor {{ active_allocation.room.floor_no }} &bull; {{ active_allocation.room.get_room_type_display }}</div>
+                        </div>
+                        <div class="text-center p-3 rounded-3" style="background-color: var(--color-bg-subtle); min-width: 90px;">
+                            <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.65rem;">Room</div>
+                            <div class="fs-2 fw-bold font-heading text-coral">{{ active_allocation.room.room_no }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 small text-muted mb-4">
+                        <div class="col-6"><strong>Allocation Date:</strong> {{ active_allocation.allocation_date|date:"M d, Y" }}</div>
+                        <div class="col-6"><strong>Academic Year:</strong> {{ active_allocation.academic_year }}</div>
+                        <div class="col-6"><strong>Bed Occupancy:</strong> {{ active_allocation.room.occupied_count }} / {{ active_allocation.room.capacity }}</div>
+                        <div class="col-6">
+                            {% if active_allocation.due_date %}
+                                <strong>Payment Deadline:</strong> <span class="text-danger fw-semibold">{{ active_allocation.due_date|date:"M d, Y" }}</span>
+                            {% else %}
+                                <strong>Status:</strong> Active Allotment
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'student_room_detail' %}" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="bi bi-info-circle me-1"></i> Full Room Specs
+                        </a>
+                        <a href="{% url 'student_room_requests' %}" class="btn btn-outline-navy btn-sm">
+                            <i class="bi bi-arrow-left-right me-1"></i> Change / Vacate
+                        </a>
+                    </div>
+                {% else %}
+                    {% include "includes/empty_state.html" with icon="door-closed" title="No Active Room Allotment" description="You do not hold an active room allotment. Please submit a hostel application while the application period is open." action_url="/applications/apply/" action_text="Submit Room Application" %}
                 {% endif %}
             </div>
         </div>
     </div>
-{% else %}
-    <div class="card shadow-sm p-4 mb-4 border-start border-4 border-warning bg-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h5 class="fw-bold mb-1">No Active Room Allotment</h5>
-                <p class="text-muted mb-0">You do not currently have a confirmed hostel room allotted.</p>
+
+    <!-- Fee Status Card -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold font-heading mb-0"><i class="bi bi-credit-card-fill text-coral me-2"></i>Fee &amp; Payment Status</h5>
+                <a href="{% url 'student_fees' %}" class="small text-decoration-none" style="color: var(--color-primary);">History &rarr;</a>
             </div>
-            <a href="{% url 'apply_room' %}" class="btn btn-warning fw-bold">Apply Now</a>
+            <div class="card-body p-4">
+                {% if active_allocation %}
+                    {% if active_allocation.status == 'CONFIRMED' %}
+                        <div class="p-3 rounded-3 mb-3" style="background-color: #D1FAE5; border: 1px solid #A7F3D0;">
+                            <div class="d-flex align-items-center gap-2 text-success fw-bold">
+                                <i class="bi bi-check-circle-fill fs-5"></i>
+                                <span>Hostel Fees Paid in Full</span>
+                            </div>
+                            <small class="text-muted d-block mt-1">Your allocation is confirmed. Present your receipt upon check-in.</small>
+                        </div>
+                    {% elif active_allocation.status == 'PENDING_PAYMENT' %}
+                        <div class="p-3 rounded-3 mb-3" style="background-color: #FEF3C7; border: 1px solid #FDE68A;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark">Semester Fee Due</div>
+                                    <small class="text-danger">Pay before {{ active_allocation.due_date|date:"M d, Y" }} to avoid expiry</small>
+                                </div>
+                                <div class="fs-4 fw-bold font-heading text-coral">₹{{ expected_fee|default:"Pending" }}</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'student_fees' %}" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-wallet2 me-1"></i> Proceed to Pay Fee
+                        </a>
+                    {% endif %}
+                {% endif %}
+
+                <h6 class="fw-semibold text-dark small text-uppercase mb-2" style="letter-spacing: 0.05em;">Recent Receipts</h6>
+                {% if recent_payments %}
+                    <div class="list-group list-group-flush">
+                        {% for pay in recent_payments %}
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold text-dark small">{{ pay.receipt_no }}</div>
+                                    <small class="text-muted">{{ pay.payment_date|date:"M d, Y" }} &bull; {{ pay.get_payment_mode_display }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold text-success small">₹{{ pay.amount }}</div>
+                                    <a href="{% url 'receipt_detail' pay.pk %}" class="small text-decoration-none" style="color: var(--color-primary);" target="_blank">Print &rarr;</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">No receipts on record.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-{% endif %}
+</div>
 
 <div class="row g-4">
-    <!-- Application Status -->
+    <!-- Recent Application Status -->
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-text text-primary me-2"></i>My Recent Application</h5>
-                <a href="{% url 'student_application_status' %}" class="small text-decoration-none">History &rarr;</a>
+                <h5 class="fw-bold font-heading mb-0"><i class="bi bi-file-earmark-text-fill text-coral me-2"></i>Recent Application</h5>
+                <a href="{% url 'student_application_status' %}" class="small text-decoration-none" style="color: var(--color-primary);">All &rarr;</a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 {% if recent_app %}
-                    <div class="p-3 bg-light rounded-3 mb-3">
+                    <div class="p-3 bg-light rounded-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-bold">Academic Year: {{ recent_app.academic_year }}</span>
-                            <span class="badge {% if recent_app.status == 'APPROVED' %}bg-success{% elif recent_app.status == 'PENDING' %}bg-warning text-dark{% elif recent_app.status == 'WAITLISTED' %}bg-info text-dark{% else %}bg-danger{% endif %}">
-                                {{ recent_app.get_status_display }}
-                            </span>
+                            <span class="fw-bold text-dark">Academic Year {{ recent_app.academic_year }}</span>
+                            {% include "includes/status_badge.html" with status=recent_app.status %}
                         </div>
                         <div class="small text-muted mb-1">Preferred Room: <strong>{{ recent_app.get_preferred_room_type_display }}</strong></div>
-                        <div class="small text-muted mb-1">Priority Ranking Score: <strong>{{ recent_app.priority_score }} pts</strong></div>
+                        <div class="small text-muted mb-1">Calculated Priority Score: <strong>{{ recent_app.priority_score }} pts</strong></div>
                         {% if recent_app.remarks %}
-                            <div class="small text-dark mt-2 p-2 bg-white rounded border">
-                                <strong>Remarks:</strong> {{ recent_app.remarks }}
+                            <div class="p-2 mt-2 bg-white rounded border small text-dark">
+                                <strong>Warden Remarks:</strong> {{ recent_app.remarks }}
                             </div>
                         {% endif %}
                     </div>
                 {% else %}
-                    <p class="text-muted small">No applications filed yet.</p>
+                    <p class="text-muted small mb-0">No applications filed yet.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Active Complaints -->
+    <!-- Active Maintenance Complaints & Shortcut -->
     <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="bi bi-tools text-warning me-2"></i>Active Complaints</h5>
-                <a href="{% url 'student_complaints' %}" class="small text-decoration-none">All Complaints &rarr;</a>
+                <h5 class="fw-bold font-heading mb-0"><i class="bi bi-tools text-coral me-2"></i>Room Maintenance &amp; Complaints</h5>
+                <a href="{% url 'student_complaints' %}" class="small text-decoration-none" style="color: var(--color-primary);">File Complaint &rarr;</a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 {% if active_complaints %}
                     <div class="list-group list-group-flush">
                         {% for comp in active_complaints %}
                             <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="fw-semibold">{{ comp.title }}</div>
-                                    <div class="small text-muted">{{ comp.get_category_display }} &bull; {{ comp.created_at|date:"M d" }}</div>
+                                    <div class="fw-semibold text-dark small">{{ comp.title }}</div>
+                                    <small class="text-muted">{{ comp.get_category_display }} &bull; {{ comp.created_at|date:"M d" }}</small>
                                 </div>
-                                <span class="badge bg-warning text-dark">{{ comp.get_status_display }}</span>
+                                <span class="badge-status badge-status-waitlisted">{{ comp.get_status_display }}</span>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted small mb-0">No active complaints open. Need any room maintenance?</p>
-                    <a href="{% url 'student_complaints' %}" class="btn btn-outline-primary btn-sm mt-2">File Maintenance Request</a>
+                    <div class="text-center py-3">
+                        <i class="bi bi-check-circle-fill text-success fs-3 mb-2 d-inline-block"></i>
+                        <p class="text-muted small mb-2">No active complaints or repair tickets logged.</p>
+                        <a href="{% url 'student_complaints' %}" class="btn btn-outline-navy btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i> Report Maintenance Issue
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

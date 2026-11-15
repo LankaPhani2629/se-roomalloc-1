@@ -1,49 +1,67 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+{% load static %}
 
-{% block title %}Accountant Dashboard - Hostel Portal{% endblock %}
+{% block title %}Accountant Dashboard - VVIT Residences{% endblock %}
+{% block header_title %}Student Housing Accounts &amp; Billing{% endblock %}
+{% block header_subtitle %}Fee collections, official payment vouchers, pending student dues, and financial audit logs{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Quick Actions Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><i class="bi bi-wallet2 text-success me-2"></i>Accountant Dashboard</h2>
-        <p class="text-muted mb-0">Fee collections, pending student dues, receipt generation, and financial reports.</p>
+        <h4 class="fw-bold font-heading mb-0 text-dark">Hostel Revenue &amp; Dues</h4>
+        <small class="text-muted">Track room fee payments, generate vouchers, and follow up on expiration deadlines</small>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{% url 'record_payment' %}" class="btn btn-success fw-bold shadow-sm">
-            <i class="bi bi-plus-circle me-1"></i> Record Payment
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'record_payment' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle-fill me-1"></i> Record Student Payment
         </a>
-        <a href="{% url 'pending_dues' %}" class="btn btn-outline-danger fw-semibold">
-            <i class="bi bi-hourglass-split me-1"></i> View Pending Dues
+        <a href="{% url 'pending_dues' %}" class="btn btn-outline-navy">
+            <i class="bi bi-hourglass-split me-1"></i> Pending Dues ({{ pending_dues_count }})
+        </a>
+        <a href="{% url 'fee_structures' %}" class="btn btn-outline-navy">
+            <i class="bi bi-tags me-1"></i> Fee Structures
         </a>
     </div>
 </div>
 
-<!-- Stat Cards -->
+<!-- Stat Cards (Collections & Dues) -->
 <div class="row g-3 mb-4">
     <div class="col-md-6">
-        <div class="card p-3 shadow-sm border-start border-4 border-success">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="stat-card-custom stat-emerald">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Total Collections</div>
-                    <div class="fs-2 fw-bold text-success">₹{{ total_collections }}</div>
-                    <div class="small text-muted">Total fees paid & confirmed</div>
+                    <div class="text-uppercase small text-muted fw-semibold" style="letter-spacing: 0.05em;">Total Collections</div>
+                    <div class="fs-1 fw-bold text-dark my-1 font-heading text-success">₹{{ total_collections }}</div>
+                    <div class="small text-muted">Confirmed student accommodation receipts</div>
+                    <div class="mt-2">
+                        <a href="{% url 'payment_history' %}" class="small fw-semibold text-decoration-none" style="color: #10B981;">
+                            View Transaction History &rarr;
+                        </a>
+                    </div>
                 </div>
-                <div class="rounded-circle bg-success-subtle text-success p-3">
-                    <i class="bi bi-cash-stack fs-3"></i>
+                <div class="stat-icon-wrapper" style="background-color: #D1FAE5; color: #065F46;">
+                    <i class="bi bi-cash-stack"></i>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-md-6">
-        <div class="card p-3 shadow-sm border-start border-4 border-warning">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="stat-card-custom stat-amber">
+            <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <div class="small text-muted text-uppercase fw-semibold">Pending Allotment Dues</div>
-                    <div class="fs-2 fw-bold text-warning">{{ pending_dues_count }} Allotments</div>
-                    <div class="small text-muted">Awaiting payment by deadline</div>
+                    <div class="text-uppercase small text-muted fw-semibold" style="letter-spacing: 0.05em;">Pending Allotment Dues</div>
+                    <div class="fs-1 fw-bold text-dark my-1 font-heading" style="color: #D97706;">{{ pending_dues_count }} Allotments</div>
+                    <div class="small text-muted">Awaiting payment by expiry deadline</div>
+                    <div class="mt-2">
+                        <a href="{% url 'pending_dues' %}" class="small fw-semibold text-decoration-none" style="color: #D97706;">
+                            Follow Up Dues &rarr;
+                        </a>
+                    </div>
                 </div>
-                <div class="rounded-circle bg-warning-subtle text-warning p-3">
-                    <i class="bi bi-hourglass-split fs-3"></i>
+                <div class="stat-icon-wrapper" style="background-color: #FEF3C7; color: #92400E;">
+                    <i class="bi bi-hourglass-split"></i>
                 </div>
             </div>
         </div>
@@ -51,72 +69,101 @@
 </div>
 
 <div class="row g-4">
-    <!-- Recent Payments -->
+    <!-- Recent Fee Receipts Table with Print Link -->
     <div class="col-lg-8">
-        <div class="card shadow-sm border-0">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">Recent Fee Receipts</h5>
-                <a href="{% url 'payment_history' %}" class="small text-decoration-none">View All Transactions &rarr;</a>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-receipt text-coral fs-5"></i>
+                    <h5 class="fw-bold font-heading mb-0 text-dark">Recent Payment Receipts</h5>
+                </div>
+                <a href="{% url 'payment_history' %}" class="small text-decoration-none" style="color: var(--color-primary);">Full Ledger &rarr;</a>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Receipt No.</th>
-                            <th>Student</th>
-                            <th>Amount</th>
-                            <th>Mode</th>
-                            <th>Date</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in recent_payments %}
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
                             <tr>
-                                <td class="fw-bold text-primary">{{ p.receipt_no }}</td>
-                                <td>{{ p.allocation.student.name }}</td>
-                                <td><strong class="text-success">₹{{ p.amount }}</strong></td>
-                                <td><span class="badge bg-light text-dark border">{{ p.get_payment_mode_display }}</span></td>
-                                <td class="small">{{ p.payment_date|date:"M d, H:i" }}</td>
-                                <td class="text-end">
-                                    <a href="{% url 'receipt_detail' p.pk %}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                        <i class="bi bi-printer"></i>
-                                    </a>
-                                </td>
+                                <th>Receipt No.</th>
+                                <th>Student</th>
+                                <th>Amount</th>
+                                <th>Mode</th>
+                                <th>Date</th>
+                                <th class="text-end">Print Receipt</th>
                             </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">No fee payments recorded yet.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for p in recent_payments %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold font-heading text-coral">{{ p.receipt_no }}</div>
+                                        <small class="text-muted">{{ p.transaction_id|truncatechars:12 }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ p.allocation.student.name }}</div>
+                                        <small class="text-muted">{{ p.allocation.student.student_id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success font-heading">₹{{ p.amount }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border small">{{ p.get_payment_mode_display }}</span>
+                                    </td>
+                                    <td class="small text-muted">{{ p.payment_date|date:"M d, Y" }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'receipt_detail' p.pk %}" class="btn btn-primary btn-sm py-1 px-3" target="_blank" title="Print Official Receipt">
+                                            <i class="bi bi-printer-fill me-1"></i> Print
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No fee payments recorded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Fee Structures Summary -->
+    <!-- Right Side: Configured Fee Schedules & Quick Record Card -->
     <div class="col-lg-4">
-        <div class="card shadow-sm border-0">
+        <!-- Quick Record Card -->
+        <div class="card border-0 shadow-sm p-4 mb-4 text-white" style="background: linear-gradient(135deg, #2C3545 0%, #1E2532 100%); border-radius: 16px;">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-credit-card-2-front-fill text-coral fs-4"></i>
+                <h5 class="fw-bold font-heading mb-0 text-white">Record Payment</h5>
+            </div>
+            <p class="text-white-50 small mb-3">
+                Quickly log cash, UPI, bank transfer, or card payments for students with pending allotments.
+            </p>
+            <a href="{% url 'record_payment' %}" class="btn btn-primary w-100">
+                <i class="bi bi-plus-circle-fill me-1"></i> Open Payment Form &rarr;
+            </a>
+        </div>
+
+        <!-- Fee Structures -->
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0">Fee Structures</h5>
-                <a href="{% url 'fee_structures' %}" class="small text-decoration-none">Manage Rates</a>
+                <h6 class="fw-bold font-heading mb-0 text-dark"><i class="bi bi-tags text-coral me-2"></i>Active Fee Structures</h6>
+                <a href="{% url 'fee_structures' %}" class="small text-decoration-none" style="color: var(--color-primary);">Manage</a>
             </div>
             <div class="list-group list-group-flush">
                 {% for fs in fee_structures %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-3">
                         <div>
-                            <div class="fw-semibold">{{ fs.get_room_type_display }}</div>
-                            <div class="small text-muted">{{ fs.academic_year }} &bull; {{ fs.due_days }} days due</div>
+                            <div class="fw-semibold text-dark">{{ fs.get_room_type_display }}</div>
+                            <small class="text-muted">{{ fs.academic_year }} &bull; {{ fs.due_days }} days due window</small>
                         </div>
-                        <span class="fw-bold text-success fs-6">₹{{ fs.amount }}</span>
+                        <span class="fw-bold text-coral fs-6 font-heading">₹{{ fs.amount }}</span>
                     </div>
                 {% empty %}
-                    <div class="p-3 text-center text-muted small">No fee rates configured.</div>
+                    <div class="p-4 text-center text-muted small">No active fee schedules.</div>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-
