@@ -34,6 +34,10 @@ def student_required(view_func):
     return role_required('STUDENT')(view_func)
 
 
+def faculty_required(view_func):
+    return role_required('FACULTY', 'ADMIN')(view_func)
+
+
 def accountant_required(view_func):
     return role_required('ACCOUNTANT', 'ADMIN')(view_func)
 

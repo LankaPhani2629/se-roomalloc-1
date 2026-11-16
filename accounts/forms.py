@@ -2,8 +2,10 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import User
+import secrets
+from .models import User, FacultyProfile, WardenProfile
 from applications.models import Student
+from hostels.models import Hostel
 
 
 class StudentRegistrationForm(forms.ModelForm):
@@ -80,4 +82,106 @@ class StudentRegistrationForm(forms.ModelForm):
 class LoginForm(forms.Form):
     username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+
+
+class StaffLoginForm(forms.Form):
+    """Staff-specific login form for Administrators, Wardens, and Faculty."""
+    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Staff Username / ID'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+
+
+class StaffCreationForm(forms.Form):
+    ROLE_CHOICES = [
+        (User.ROLE_FACULTY, 'Faculty / Head of Department (HOD)'),
+        (User.ROLE_WARDEN, 'Hostel Resident Warden'),
+        (User.ROLE_ACCOUNTANT, 'Hostel Accounts Officer'),
+    ]
+
+    username = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Desired staff username'}))
+    name = forms.CharField(max_length=150, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Official Name'}))
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'staff@vvit.edu'}))
+    phone = forms.CharField(max_length=15, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contact phone'}))
+    role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_role', 'onchange': 'toggleStaffFields()'}))
+    employee_id = forms.CharField(max_length=50, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. EMP-CSE-102'}))
+
+    # Faculty Specific
+    department = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Computer Science, Biotechnology'}))
+    designation = forms.CharField(max_length=100, required=False, initial='Assistant Professor', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Professor & HOD'}))
+
+    # Warden Specific
+    assigned_hostel = forms.ModelChoiceField(queryset=Hostel.objects.all(), required=False, empty_label="-- Select Hostel Block --", widget=forms.Select(attrs={'class': 'form-select'}))
+
+    # Temporary Password (optional custom, otherwise generated)
+    temp_password = forms.CharField(max_length=50, required=False, help_text="Leave blank to auto-generate a secure temporary password.", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank for auto-generated password'}))
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("A user with this username already exists.")
+        return username
+
+    def clean_employee_id(self):
+        emp_id = self.cleaned_data.get('employee_id')
+        role = self.cleaned_data.get('role')
+        if role == User.ROLE_FACULTY and FacultyProfile.objects.filter(employee_id=emp_id).exists():
+            raise ValidationError("A faculty member with this Employee ID already exists.")
+        if role == User.ROLE_WARDEN and WardenProfile.objects.filter(employee_id=emp_id).exists():
+            raise ValidationError("A warden with this Employee ID already exists.")
+        return emp_id
+
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get('role')
+        if role == User.ROLE_FACULTY:
+            if not cleaned_data.get('department'):
+                self.add_error('department', "Department is mandatory for faculty accounts.")
+        elif role == User.ROLE_WARDEN:
+            if not cleaned_data.get('assigned_hostel'):
+                self.add_error('assigned_hostel', "Assigned hostel is mandatory for warden accounts.")
+        return cleaned_data
+
+    def save(self):
+        username = self.cleaned_data['username']
+        email = self.cleaned_data['email']
+        name = self.cleaned_data['name']
+        phone = self.cleaned_data['phone']
+        role = self.cleaned_data['role']
+        emp_id = self.cleaned_data['employee_id']
+        temp_pwd = self.cleaned_data.get('temp_password') or secrets.token_urlsafe(8)
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=temp_pwd,
+            first_name=name,
+            role=role,
+            phone=phone,
+            is_first_login=True  # Force password change on first login
+        )
+
+        if role == User.ROLE_FACULTY:
+            FacultyProfile.objects.create(
+                user=user,
+                employee_id=emp_id,
+                name=name,
+                department=self.cleaned_data.get('department'),
+                designation=self.cleaned_data.get('designation') or 'Assistant Professor',
+                phone=phone,
+                email=email
+            )
+        elif role == User.ROLE_WARDEN:
+            WardenProfile.objects.create(
+                user=user,
+                employee_id=emp_id,
+                name=name,
+                phone=phone,
+                assigned_hostel=self.cleaned_data.get('assigned_hostel')
+            )
+            # Also sync hostel's warden FK
+            hostel = self.cleaned_data.get('assigned_hostel')
+            if hostel:
+                hostel.warden = user
+                hostel.save(update_fields=['warden'])
+
+        return user, temp_pwd
 

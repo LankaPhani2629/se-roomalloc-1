@@ -1,0 +1,148 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Add New Staff Account - VVIT Residences{% endblock %}
+{% block header_title %}Provision Staff Account{% endblock %}
+{% block header_subtitle %}Create a verified official account for Wardens, Faculty/HODs, or Accounts Officers{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-plus-fill text-coral fs-5"></i>
+                    <h5 class="fw-bold font-heading mb-0 text-dark">New Staff Provisioning</h5>
+                </div>
+                <a href="{% url 'admin_staff_list' %}" class="btn btn-outline-navy btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Staff Directory
+                </a>
+            </div>
+            <div class="card-body p-4">
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 small mb-4">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate id="staffForm">
+                    {% csrf_token %}
+
+                    <!-- Section 1: Role & Identity -->
+                    <h6 class="fw-bold font-heading text-dark border-bottom pb-2 mb-3">1. Role &amp; Institutional Identification</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Staff Role *</label>
+                            {{ form.role }}
+                            {% if form.role.errors %}<div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Employee ID / Code *</label>
+                            {{ form.employee_id }}
+                            {% if form.employee_id.errors %}<div class="text-danger small mt-1">{{ form.employee_id.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Full Official Name *</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Official Username *</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Contact Info -->
+                    <h6 class="fw-bold font-heading text-dark border-bottom pb-2 mb-3">2. Official Contact Information</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">University Email Address *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Official Mobile Number *</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Faculty Specific Fields -->
+                    <div id="facultyFieldsSection" class="p-3 bg-light rounded-3 mb-4 border">
+                        <div class="d-flex align-items-center gap-2 mb-3 text-dark fw-bold">
+                            <i class="bi bi-mortarboard-fill text-coral"></i>
+                            <span>Faculty Academic Assignment</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Academic Department *</label>
+                                {{ form.department }}
+                                <div class="form-text small" style="font-size: 0.72rem;">Student applications from this department will route to this faculty member.</div>
+                                {% if form.department.errors %}<div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Academic Designation</label>
+                                {{ form.designation }}
+                                {% if form.designation.errors %}<div class="text-danger small mt-1">{{ form.designation.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Warden Specific Fields -->
+                    <div id="wardenFieldsSection" class="p-3 bg-light rounded-3 mb-4 border">
+                        <div class="d-flex align-items-center gap-2 mb-3 text-dark fw-bold">
+                            <i class="bi bi-building-fill text-coral"></i>
+                            <span>Warden Hostel Assignment</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold">Assigned Residential Hostel Block *</label>
+                                {{ form.assigned_hostel }}
+                                <div class="form-text small" style="font-size: 0.72rem;">Warden dashboard and room allocations will be strictly restricted to this hostel.</div>
+                                {% if form.assigned_hostel.errors %}<div class="text-danger small mt-1">{{ form.assigned_hostel.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Temporary Password Security -->
+                    <h6 class="fw-bold font-heading text-dark border-bottom pb-2 mb-3">3. Security &amp; Temporary Access</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold">Custom Temporary Password (Optional)</label>
+                            {{ form.temp_password }}
+                            <div class="form-text text-muted small" style="font-size: 0.75rem;">
+                                If left blank, a secure 8-character password will be auto-generated. The staff member will be forced to change this password on their first login.
+                            </div>
+                            {% if form.temp_password.errors %}<div class="text-danger small mt-1">{{ form.temp_password.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% url 'admin_staff_list' %}" class="btn btn-outline-navy">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 shadow">
+                            <i class="bi bi-shield-check me-1"></i> Provision Staff Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleStaffFields() {
+        const roleSelect = document.getElementById('id_role');
+        const role = roleSelect ? roleSelect.value : '';
+        const facSec = document.getElementById('facultyFieldsSection');
+        const warSec = document.getElementById('wardenFieldsSection');
+
+        if (facSec) facSec.style.display = (role === 'FACULTY') ? 'block' : 'none';
+        if (warSec) warSec.style.display = (role === 'WARDEN') ? 'block' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleStaffFields);
+</script>
+{% endblock %}

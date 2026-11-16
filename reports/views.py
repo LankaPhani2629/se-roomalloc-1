@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, Q, F
 from django.utils import timezone
 
-from accounts.decorators import admin_required, warden_required, student_required, accountant_required, role_required
+from accounts.decorators import admin_required, warden_required, student_required, accountant_required, faculty_required, role_required
 from hostels.models import Hostel, Room
 from applications.models import Student, Application
 from allocations.models import Allocation, RoomChangeRequest
@@ -53,28 +53,106 @@ def admin_dashboard_view(request):
 @login_required
 @warden_required
 def warden_dashboard_view(request):
-    """Warden dashboard: pending applications, room requests, complaints, hostel summary."""
-    pending_apps = Application.objects.filter(status=Application.STATUS_PENDING).count()
-    pending_room_requests = RoomChangeRequest.objects.filter(status=RoomChangeRequest.STATUS_PENDING).count()
-    open_complaints = Complaint.objects.filter(status__in=[Complaint.STATUS_OPEN, Complaint.STATUS_IN_PROGRESS]).count()
+    """Warden dashboard: strictly scoped to the warden's assigned hostel."""
+    assigned_hostels = Hostel.objects.none()
+    assigned_hostel = None
 
-    assigned_hostels = Hostel.objects.filter(warden=request.user) if not request.user.is_superuser else Hostel.objects.all()
+    if hasattr(request.user, 'warden_profile') and request.user.warden_profile.assigned_hostel:
+        assigned_hostel = request.user.warden_profile.assigned_hostel
+        assigned_hostels = Hostel.objects.filter(pk=assigned_hostel.pk)
+    elif request.user.is_superuser:
+        assigned_hostels = Hostel.objects.all()
+        assigned_hostel = assigned_hostels.first()
+    else:
+        assigned_hostels = Hostel.objects.filter(warden=request.user)
+        assigned_hostel = assigned_hostels.first()
 
-    recent_pending_apps = Application.objects.select_related('student').filter(
-        status=Application.STATUS_PENDING
-    ).order_by('-application_date')[:5]
+    # Scope room change requests & complaints to assigned hostel
+    if assigned_hostel:
+        pending_room_requests = RoomChangeRequest.objects.filter(
+            status=RoomChangeRequest.STATUS_PENDING,
+            current_allocation__room__hostel=assigned_hostel
+        ).count()
+        open_complaints = Complaint.objects.filter(
+            status__in=[Complaint.STATUS_OPEN, Complaint.STATUS_IN_PROGRESS],
+            allocation__room__hostel=assigned_hostel
+        ).count()
+        recent_room_requests = RoomChangeRequest.objects.select_related('student', 'current_allocation__room').filter(
+            status=RoomChangeRequest.STATUS_PENDING,
+            current_allocation__room__hostel=assigned_hostel
+        ).order_by('-created_at')[:5]
+        
+        # Applications matching the hostel's gender type
+        target_gender = Student.GENDER_MALE if assigned_hostel.hostel_type == Hostel.TYPE_BOYS else Student.GENDER_FEMALE
+        pending_apps_qs = Application.objects.select_related('student').filter(
+            student__gender=target_gender
+        )
+    else:
+        pending_room_requests = RoomChangeRequest.objects.filter(status=RoomChangeRequest.STATUS_PENDING).count()
+        open_complaints = Complaint.objects.filter(status__in=[Complaint.STATUS_OPEN, Complaint.STATUS_IN_PROGRESS]).count()
+        recent_room_requests = RoomChangeRequest.objects.select_related('student', 'current_allocation__room').filter(
+            status=RoomChangeRequest.STATUS_PENDING
+        ).order_by('-created_at')[:5]
+        pending_apps_qs = Application.objects.select_related('student').all()
 
-    recent_room_requests = RoomChangeRequest.objects.select_related('student', 'current_allocation__room').filter(
-        status=RoomChangeRequest.STATUS_PENDING
-    ).order_by('-created_at')[:5]
+    pending_apps = pending_apps_qs.filter(
+        status__in=[Application.STATUS_PENDING, 'FACULTY_RECOMMENDED', 'SUBMITTED']
+    ).count()
+
+    recent_pending_apps = pending_apps_qs.filter(
+        status__in=[Application.STATUS_PENDING, 'FACULTY_RECOMMENDED', 'SUBMITTED']
+    ).order_by('-application_date')[:6]
 
     return render(request, 'reports/warden_dashboard.html', {
         'pending_apps': pending_apps,
         'pending_room_requests': pending_room_requests,
         'open_complaints': open_complaints,
+        'assigned_hostel': assigned_hostel,
         'assigned_hostels': assigned_hostels,
         'recent_pending_apps': recent_pending_apps,
         'recent_room_requests': recent_room_requests,
+    })
+
+
+@login_required
+@faculty_required
+def faculty_dashboard_view(request):
+    """
+    Faculty / Head of Department Dashboard:
+    Lists applications of students belonging exclusively to the faculty member's department.
+    """
+    faculty_profile = getattr(request.user, 'faculty_profile', None)
+    department = faculty_profile.department if faculty_profile else ''
+
+    # Filter student applications by department
+    applications = Application.objects.select_related('student').order_by('-application_date')
+    if department and not request.user.is_superuser:
+        applications = applications.filter(
+            Q(student__course__icontains=department) | Q(student__course__iexact=department)
+        )
+
+    # Status & Year filters
+    status_filter = request.GET.get('status', '')
+    year_filter = request.GET.get('year', '')
+
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+    if year_filter:
+        applications = applications.filter(student__year=year_filter)
+
+    total_department_apps = applications.count()
+    pending_verification_count = applications.filter(
+        status__in=[Application.STATUS_PENDING, 'SUBMITTED']
+    ).count()
+
+    return render(request, 'reports/faculty_dashboard.html', {
+        'faculty_profile': faculty_profile,
+        'department': department,
+        'applications': applications[:20],
+        'total_department_apps': total_department_apps,
+        'pending_verification_count': pending_verification_count,
+        'status_filter': status_filter,
+        'year_filter': year_filter,
     })
 
 

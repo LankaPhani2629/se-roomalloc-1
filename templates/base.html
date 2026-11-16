@@ -81,8 +81,11 @@
                             </button>
                         </form>
                     {% else %}
+                        <a href="{% url 'staff_login' %}" class="btn btn-outline-secondary btn-sm px-2" title="Warden, Faculty & Admin Portal">
+                            <i class="bi bi-shield-lock me-1"></i>Staff
+                        </a>
                         <a href="{% url 'login' %}" class="btn btn-outline-navy btn-sm px-3">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Student Sign In
                         </a>
                         <a href="{% url 'register' %}" class="btn btn-primary btn-sm px-3 shadow-sm">
                             <i class="bi bi-person-plus me-1"></i>Apply for Hostel

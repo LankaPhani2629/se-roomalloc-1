@@ -1,0 +1,61 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Staff Provisioned Successfully - VVIT Residences{% endblock %}
+{% block header_title %}Staff Account Provisioned{% endblock %}
+{% block header_subtitle %}Account credentials and onboarding confirmation voucher{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: 16px;">
+            <div class="rounded-circle d-inline-flex p-3 mb-3 mx-auto" style="background-color: #D1FAE5; color: #065F46; width: 68px; height: 68px; align-items: center; justify-content: center;">
+                <i class="bi bi-shield-check fs-2"></i>
+            </div>
+            <h3 class="fw-bold font-heading text-dark mb-1">Staff Account Successfully Created!</h3>
+            <p class="text-muted small mb-4">
+                Share the temporary credentials below with the employee. On first login, the employee will be prompted to set their permanent password.
+            </p>
+
+            <div class="p-4 rounded-3 text-start mb-4" style="background-color: var(--color-bg-subtle); border: 1px solid var(--color-border);">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Employee Name</small>
+                        <div class="fw-bold text-dark fs-5">{{ created_user.first_name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Role / Designation</small>
+                        <div>
+                            <span class="badge-role-tag badge-role-{{ created_user.role|lower }}">{{ created_user.get_role_display }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Official Username</small>
+                        <div class="fw-bold text-primary font-monospace fs-5">{{ created_user.username }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Temporary Password</small>
+                        <div class="p-2 rounded bg-white border text-danger fw-bold font-monospace fs-5 d-flex justify-content-between align-items-center">
+                            <span>{{ temp_password }}</span>
+                            <span class="badge bg-warning text-dark small" style="font-size: 0.65rem;">One-time Use</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Portal Access URL</small>
+                        <div class="small">Staff Login: <code>http://127.0.0.1:8000/accounts/staff-login/</code></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'admin_staff_list' %}" class="btn btn-navy">
+                    <i class="bi bi-people me-1"></i> Return to Staff Directory
+                </a>
+                <a href="{% url 'admin_staff_add' %}" class="btn btn-outline-navy">
+                    <i class="bi bi-plus-circle me-1"></i> Provision Another Staff
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

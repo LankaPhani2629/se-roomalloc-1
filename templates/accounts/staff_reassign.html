@@ -1,0 +1,54 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Reassign Staff Member - VVIT Residences{% endblock %}
+{% block header_title %}Reassign Staff Member{% endblock %}
+{% block header_subtitle %}Update hostel block assignment or academic department{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold font-heading mb-0 text-dark">Reassign {{ staff_user.first_name|default:staff_user.username }}</h5>
+                <span class="badge-role-tag badge-role-{{ staff_user.role|lower }}">{{ staff_user.get_role_display }}</span>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if staff_user.role == 'WARDEN' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Assigned Residential Hostel Block *</label>
+                            <select name="assigned_hostel" class="form-select" required>
+                                <option value="">-- Unassigned --</option>
+                                {% for h in hostels %}
+                                    <option value="{{ h.pk }}" {% if staff_user.warden_profile.assigned_hostel_id == h.pk %}selected{% endif %}>
+                                        {{ h.name }} ({{ h.get_hostel_type_display }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text small">Warden applications, room grids, and complaints will strictly adapt to this hostel.</div>
+                        </div>
+                    {% elif staff_user.role == 'FACULTY' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Academic Department *</label>
+                            <input type="text" name="department" class="form-control" value="{{ staff_user.faculty_profile.department|default:'' }}" required>
+                            <div class="form-text small">Student applications from this department will route to this faculty member.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Academic Designation</label>
+                            <input type="text" name="designation" class="form-control" value="{{ staff_user.faculty_profile.designation|default:'' }}">
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+                        <a href="{% url 'admin_staff_list' %}" class="btn btn-outline-navy">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Assignment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

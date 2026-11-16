@@ -1,0 +1,157 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Staff Management - VVIT Residences{% endblock %}
+{% block header_title %}Staff &amp; Officer Management{% endblock %}
+{% block header_subtitle %}Provision, reassign, activate/deactivate, and manage credentials for Wardens, Faculty, and Accounts Officers{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold font-heading mb-0 text-dark">University Staff Directory</h4>
+        <small class="text-muted">Staff accounts are provisioned exclusively by administrators with enforced first-login password changes</small>
+    </div>
+    <div>
+        <a href="{% url 'admin_staff_add' %}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-plus-fill me-1"></i> Provision New Staff Account
+        </a>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card border-0 shadow-sm p-3 mb-4" style="border-radius: 14px;">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-light border"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search name, username, email..." value="{{ search_q }}">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="role" class="form-select">
+                <option value="">-- All Staff Roles --</option>
+                <option value="WARDEN" {% if role_filter == 'WARDEN' %}selected{% endif %}>Wardens</option>
+                <option value="FACULTY" {% if role_filter == 'FACULTY' %}selected{% endif %}>Faculty / HODs</option>
+                <option value="ACCOUNTANT" {% if role_filter == 'ACCOUNTANT' %}selected{% endif %}>Accountants</option>
+                <option value="ADMIN" {% if role_filter == 'ADMIN' %}selected{% endif %}>Administrators</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">-- All Account Statuses --</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Deactivated Only</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-navy w-100">Filter</button>
+            <a href="{% url 'admin_staff_list' %}" class="btn btn-outline-navy" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Staff Directory Table -->
+<div class="card border-0 shadow-sm" style="border-radius: 16px;">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold font-heading mb-0 text-dark">Staff Accounts ({{ staff_users.count }})</h5>
+        <span class="badge-role-tag badge-role-admin">Admin Protected</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Employee / User</th>
+                        <th>Role</th>
+                        <th>Assignment / Department</th>
+                        <th>Contact</th>
+                        <th>Account Status</th>
+                        <th>Last Login</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in staff_users %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold font-heading text-dark">{{ u.first_name|default:u.username }}</div>
+                                <div class="small text-muted">@{{ u.username }} &bull; {{ u.email }}</div>
+                            </td>
+                            <td>
+                                <span class="badge-role-tag badge-role-{{ u.role|lower }}">
+                                    {{ u.get_role_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if u.role == 'WARDEN' %}
+                                    {% if u.warden_profile.assigned_hostel %}
+                                        <div class="fw-semibold text-dark">{{ u.warden_profile.assigned_hostel.name }}</div>
+                                        <small class="text-muted">{{ u.warden_profile.assigned_hostel.get_hostel_type_display }}</small>
+                                    {% else %}
+                                        <span class="text-danger small fw-semibold"><i class="bi bi-exclamation-triangle me-1"></i>Unassigned</span>
+                                    {% endif %}
+                                {% elif u.role == 'FACULTY' %}
+                                    <div class="fw-semibold text-dark">{{ u.faculty_profile.department }}</div>
+                                    <small class="text-muted">{{ u.faculty_profile.designation }}</small>
+                                {% elif u.role == 'ACCOUNTANT' %}
+                                    <div class="fw-semibold text-dark">Finance Office</div>
+                                    <small class="text-muted">Hostel Accounts Section</small>
+                                {% else %}
+                                    <div class="fw-semibold text-dark">Central Administration</div>
+                                    <small class="text-muted">Full System Superuser</small>
+                                {% endif %}
+                            </td>
+                            <td class="small">
+                                <i class="bi bi-telephone text-muted me-1"></i>{{ u.phone|default:"N/A" }}
+                            </td>
+                            <td>
+                                {% if u.is_active %}
+                                    <span class="badge-status badge-status-approved">
+                                        <i class="bi bi-check-circle-fill"></i> Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge-status badge-status-rejected">
+                                        <i class="bi bi-slash-circle"></i> Deactivated
+                                    </span>
+                                {% endif %}
+                                {% if u.is_first_login %}
+                                    <div class="badge bg-warning text-dark mt-1" style="font-size: 0.65rem;">Temp Password</div>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">
+                                {{ u.last_login|date:"M d, Y H:i"|default:"Never logged in" }}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <!-- Reassign (Hostel/Dept) -->
+                                    {% if u.role == 'WARDEN' or u.role == 'FACULTY' %}
+                                        <a href="{% url 'admin_staff_reassign' u.pk %}" class="btn btn-outline-navy btn-sm py-1 px-2" title="Reassign Hostel / Dept">
+                                            <i class="bi bi-sliders"></i>
+                                        </a>
+                                    {% endif %}
+
+                                    <!-- Reset Password -->
+                                    <a href="{% url 'admin_staff_reset_password' u.pk %}" class="btn btn-outline-navy btn-sm py-1 px-2" title="Reset Temporary Password" onclick="return confirm('Generate a new temporary password for {{ u.username }}?');">
+                                        <i class="bi bi-key"></i>
+                                    </a>
+
+                                    <!-- Toggle Active / Deactivate -->
+                                    {% if u != request.user %}
+                                        <a href="{% url 'admin_staff_toggle_active' u.pk %}" class="btn {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-sm py-1 px-2" title="{% if u.is_active %}Deactivate Account{% else %}Activate Account{% endif %}" onclick="return confirm('Are you sure you want to change active status for {{ u.username }}?');">
+                                            <i class="bi {% if u.is_active %}bi-person-x{% else %}bi-person-check{% endif %}"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No staff accounts found matching your query.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -239,6 +239,9 @@ def process_room_change_or_vacate(change_request, warden_user, decision, remarks
                     link='/allocations/requests/'
                 )
 
+                # Trigger automatic promotion for highest priority waitlisted student!
+                auto_promote_waitlisted_student(room=current_room)
+
             elif req.request_type == RoomChangeRequest.TYPE_CHANGE:
                 # 2. Room change request
                 new_room = target_room or req.target_room
@@ -313,4 +316,147 @@ def process_room_change_or_vacate(change_request, warden_user, decision, remarks
             )
 
         return req
+
+
+# ==========================================
+# WAITING LIST ENGINE & AUTO-PROMOTION
+# ==========================================
+
+def recalculate_waiting_list_positions(gender=None):
+    """
+    Ranks all waitlisted applications by priority score (descending)
+    and assigns consecutive waiting list positions (1, 2, 3...).
+    """
+    qs = Application.objects.filter(status=Application.STATUS_WAITLISTED)
+    if gender:
+        qs = qs.filter(student__gender=gender)
+
+    genders = [gender] if gender else [Student.GENDER_MALE, Student.GENDER_FEMALE]
+    for g in genders:
+        apps = list(Application.objects.filter(
+            status=Application.STATUS_WAITLISTED,
+            student__gender=g
+        ).order_by('-priority_score', 'application_date'))
+
+        for idx, app in enumerate(apps, start=1):
+            if app.waiting_list_position != idx:
+                app.waiting_list_position = idx
+                app.save(update_fields=['waiting_list_position'])
+
+
+def auto_promote_waitlisted_student(room, acceptance_hours=48):
+    """
+    Automatically finds the highest-priority waitlisted student whose gender,
+    room type, and hostel match the newly available bed.
+    Creates a provisional allotment with an acceptance deadline (e.g. 48 hours).
+    """
+    with transaction.atomic():
+        locked_room = Room.objects.select_for_update().get(pk=room.pk)
+        if locked_room.occupied_count >= locked_room.capacity or locked_room.status != Room.STATUS_AVAILABLE:
+            return None
+
+        target_gender = Student.GENDER_MALE if locked_room.hostel.hostel_type == Hostel.TYPE_BOYS else Student.GENDER_FEMALE
+
+        # Find candidates without an active allotment
+        waitlisted_apps = Application.objects.select_related('student', 'student__user').filter(
+            status=Application.STATUS_WAITLISTED,
+            student__gender=target_gender
+        ).exclude(
+            student__allocations__is_active=True
+        ).order_by('waiting_list_position', '-priority_score', 'application_date')
+
+        # Prioritize matching room type preference, fallback to any waitlisted
+        candidate_app = waitlisted_apps.filter(preferred_room_type=locked_room.room_type).first() or waitlisted_apps.first()
+        if not candidate_app:
+            return None
+
+        deadline = timezone.now() + timedelta(hours=acceptance_hours)
+        due_date = (timezone.now() + timedelta(days=7)).date()
+
+        allocation = Allocation.objects.create(
+            student=candidate_app.student,
+            room=locked_room,
+            application=candidate_app,
+            academic_year=candidate_app.academic_year,
+            allocation_date=timezone.now().date(),
+            due_date=due_date,
+            acceptance_deadline=deadline,
+            is_provisional_offer=True,
+            provisional_accepted=False,
+            status=Allocation.STATUS_PENDING_PAYMENT,
+            is_active=True
+        )
+
+        locked_room.occupied_count += 1
+        locked_room.save()
+
+        candidate_app.status = Application.STATUS_APPROVED
+        candidate_app.waiting_list_position = None
+        candidate_app.save(update_fields=['status', 'waiting_list_position'])
+
+        # Create alert notification
+        create_notification(
+            user=candidate_app.student.user,
+            title="Provisional Allotment Offer!",
+            message=(
+                f"Great news! A bed in Room {locked_room.room_no} ({locked_room.hostel.name}) opened up! "
+                f"You have been auto-promoted from the waitlist. "
+                f"Please accept and confirm before {deadline.strftime('%b %d, %Y %I:%M %p')} or the offer expires."
+            ),
+            link='/allocations/my-room/'
+        )
+
+        recalculate_waiting_list_positions(target_gender)
+        return allocation
+
+
+def process_expired_provisional_offers():
+    """
+    Checks for provisional waitlist offers where acceptance_deadline has passed
+    without student acceptance. Cancels offer, decrements room occupancy, and
+    promotes the next waitlisted applicant.
+    """
+    now = timezone.now()
+    expired_offers = Allocation.objects.select_related('room', 'student', 'application').filter(
+        is_provisional_offer=True,
+        provisional_accepted=False,
+        is_active=True,
+        acceptance_deadline__lt=now
+    )
+
+    processed_count = 0
+    for alloc in expired_offers:
+        with transaction.atomic():
+            locked_alloc = Allocation.objects.select_for_update().get(pk=alloc.pk)
+            if not locked_alloc.is_active or locked_alloc.provisional_accepted:
+                continue
+
+            locked_room = Room.objects.select_for_update().get(pk=locked_alloc.room_id)
+            if locked_room.occupied_count > 0:
+                locked_room.occupied_count -= 1
+                locked_room.save()
+
+            locked_alloc.status = Allocation.STATUS_EXPIRED
+            locked_alloc.is_active = False
+            locked_alloc.save(update_fields=['status', 'is_active'])
+
+            if locked_alloc.application:
+                locked_alloc.application.status = Application.STATUS_REJECTED
+                locked_alloc.application.remarks = "Provisional allotment offer expired: student did not accept within deadline."
+                locked_alloc.application.save(update_fields=['status', 'remarks'])
+
+            # Notify the student whose offer expired
+            create_notification(
+                user=locked_alloc.student.user,
+                title="Provisional Allotment Offer Expired",
+                message=f"Your provisional allotment for Room {locked_room.room_no} expired as it was not confirmed within the acceptance window.",
+                link='/applications/status/'
+            )
+
+            # Auto promote next student in line!
+            auto_promote_waitlisted_student(room=locked_room)
+            processed_count += 1
+
+    return processed_count
+
 

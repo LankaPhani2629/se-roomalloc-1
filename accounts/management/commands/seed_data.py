@@ -1,7 +1,7 @@
 from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from accounts.models import User
+from accounts.models import User, FacultyProfile, WardenProfile
 from applications.models import Student, ApplicationPeriod
 from hostels.models import Hostel, Room
 from fees.models import FeeStructure
@@ -37,11 +37,39 @@ class Command(BaseCommand):
                 'first_name': 'Vikram',
                 'last_name': 'Rathore',
                 'role': User.ROLE_WARDEN,
+                'phone': '9876543201',
                 'is_staff': True,
             }
         )
         warden_user.set_password("warden123")
         warden_user.save()
+
+        # 2b. Faculty / HOD
+        faculty_user, _ = User.objects.get_or_create(
+            username="prof_cse",
+            defaults={
+                'email': 'anand.rao@college.edu',
+                'first_name': 'Dr. Anand',
+                'last_name': 'Rao',
+                'role': User.ROLE_FACULTY,
+                'phone': '9876543202',
+                'is_staff': True,
+            }
+        )
+        faculty_user.set_password("faculty123")
+        faculty_user.save()
+
+        FacultyProfile.objects.update_or_create(
+            user=faculty_user,
+            defaults={
+                'employee_id': 'EMP-CSE-001',
+                'name': 'Dr. Anand Rao',
+                'department': 'B.Tech Computer Science',
+                'designation': 'Professor & Head of Department',
+                'phone': '9876543202',
+                'email': 'anand.rao@college.edu',
+            }
+        )
 
         # 3. Accountant
         accountant_user, _ = User.objects.get_or_create(
@@ -126,6 +154,16 @@ class Command(BaseCommand):
                 'hostel_type': Hostel.TYPE_BOYS,
                 'warden': warden_user,
                 'description': 'Senior Boys Hostel Block with Wi-Fi, Gym, and Common Study Area.'
+            }
+        )
+
+        WardenProfile.objects.update_or_create(
+            user=warden_user,
+            defaults={
+                'employee_id': 'EMP-WAR-001',
+                'name': 'Vikram Rathore',
+                'phone': '9876543201',
+                'assigned_hostel': boys_hostel
             }
         )
         girls_hostel, _ = Hostel.objects.get_or_create(
@@ -228,6 +266,7 @@ class Command(BaseCommand):
             "\nDemo Accounts created:\n"
             "  - Admin:      admin / admin123\n"
             "  - Warden:     warden / warden123\n"
+            "  - Faculty:    prof_cse / faculty123 (Dr. Anand Rao, CSE)\n"
             "  - Student 1:  student_boy / student123 (Rahul Sharma, Male)\n"
             "  - Student 2:  student_girl / student123 (Pooja Verma, Female)\n"
             "  - Accountant: accountant / accountant123\n"

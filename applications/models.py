@@ -95,6 +95,8 @@ class Application(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     remarks = models.TextField(blank=True, default='')
     priority_score = models.IntegerField(default=0, help_text="Calculated priority score for room allotment")
+    waiting_list_position = models.PositiveIntegerField(null=True, blank=True, help_text="Queue position in waitlist")
+    waiting_list_reason = models.TextField(blank=True, default='', help_text="Reason for waitlist or manual reordering")
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

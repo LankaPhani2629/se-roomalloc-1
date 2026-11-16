@@ -32,6 +32,13 @@ INSTALLED_APPS = [
     'complaints.apps.ComplaintsConfig',
     'notifications.apps.NotificationsConfig',
     'reports.apps.ReportsConfig',
+    'mess.apps.MessConfig',
+    'maintenance.apps.MaintenanceConfig',
+
+    # Two-Factor Authentication (django-otp)
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -45,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -118,3 +126,16 @@ LOGOUT_REDIRECT_URL = 'login'
 # Email backend: Console email backend for notifications
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'hostel-admin@college.edu'
+
+# Media Files (User uploads such as maintenance photos)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Security & Session Management: 30 minutes inactivity timeout
+SESSION_COOKIE_AGE = 1800
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Account Security & Failed Attempts Lockout
+MAX_FAILED_LOGIN_ATTEMPTS = 5
+LOGIN_LOCKOUT_MINUTES = 15
+

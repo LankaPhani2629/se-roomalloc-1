@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Staff Portal Sign In - VVIT Residences{% endblock %}
+
+{% block content %}
+<div class="hero-auth-wrapper">
+    <div class="hero-auth-content">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="glass-card fade-in">
+                    <!-- Brand & Header -->
+                    <div class="text-center mb-4">
+                        <img src="{% static 'images/logo.png' %}" alt="VVIT Logo" height="52" class="mb-2 bg-white rounded-3 p-1 shadow-sm" onerror="this.style.display='none'">
+                        <div class="badge-role-tag badge-role-admin mb-1">Staff &amp; Officers Only</div>
+                        <h3 class="fw-bold font-heading mb-1 text-white">Staff <span class="highlight-coral">Portal Login</span></h3>
+                        <p class="text-white-50 small mb-0">Authorized access for Administrators, Wardens &amp; Faculty/HODs</p>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small rounded-3 mb-3" style="background: rgba(239, 68, 68, 0.25); border: 1px solid rgba(239, 68, 68, 0.5); color: #fff;">
+                            {{ form.non_field_errors.0 }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Employee Username / ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-0"><i class="bi bi-person-badge-fill text-muted"></i></span>
+                                <input type="text" name="username" class="form-control" placeholder="e.g. warden_boy, prof_sharma, admin" required autofocus id="id_username" value="{{ form.username.value|default:'' }}">
+                            </div>
+                            {% if form.username.errors %}
+                                <div class="text-warning small mt-1">{{ form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1">Staff Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-0"><i class="bi bi-shield-lock-fill text-muted"></i></span>
+                                <input type="password" name="password" class="form-control" placeholder="••••••••" required id="id_password">
+                            </div>
+                            {% if form.password.errors %}
+                                <div class="text-warning small mt-1">{{ form.password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mb-3">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Authenticate &amp; Access Dashboard
+                        </button>
+                    </form>
+
+                    <!-- Notice Box -->
+                    <div class="glass-notice-box mb-3">
+                        <i class="bi bi-shield-check text-coral fs-5 flex-shrink-0"></i>
+                        <div>
+                            <strong>Security Notice:</strong> Staff accounts are provisioned exclusively by the University Administration. Temporary passwords must be updated upon first sign in.
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-top border-white-50 text-center small text-white-50">
+                        Are you a student? <a href="{% url 'login' %}" class="fw-bold text-white text-decoration-none highlight-coral">Student Portal Sign In &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
