@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Mess Menu & Meal Rebates - Campus Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1">
+            <i class="bi bi-egg-fried text-warning me-2"></i>Hostel Mess Menu
+        </h2>
+        <p class="text-muted mb-0">Daily nutritional meal schedules, meal attendance rebates, and dietary feedback.</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if user.is_student %}
+            <a href="{% url 'mess_feedback' %}" class="btn btn-outline-warning text-dark fw-semibold shadow-sm">
+                <i class="bi bi-star-fill text-warning me-1"></i> Rate Today's Meal
+            </a>
+        {% elif user.role == 'WARDEN' or user.role == 'ADMIN' or user.is_superuser %}
+            <a href="{% url 'mess_menu_publish' %}" class="btn btn-primary fw-semibold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Publish / Update Menu
+            </a>
+            <a href="{% url 'mess_reports' %}" class="btn btn-outline-secondary fw-semibold">
+                <i class="bi bi-bar-chart-line me-1"></i> Mess Analytics
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if user.is_student %}
+    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-3 mb-4 rounded-3">
+        <i class="bi bi-info-circle-fill fs-3 text-info"></i>
+        <div>
+            <div class="fw-bold">Meal Rebate Policy</div>
+            <div class="small">Mark meals you plan to skip before the cutoff time to claim a ₹40 rebate per meal credited directly to your monthly hostel mess bill.</div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row g-4">
+    {% regroup menus by date as menu_by_date %}
+    
+    {% for day in menu_by_date %}
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-calendar-day text-primary me-2"></i>{{ day.grouper|date:"l, d M Y" }}
+                        </h5>
+                        {% if day.grouper == today %}
+                            <span class="badge bg-success mt-1">Today's Meals</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for item in day.list %}
+                            {% with key=item.date|stringformat:"s"|add:"_"|add:item.meal %}
+                            <div class="list-group-item p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <span class="badge {% if item.meal == 'BREAKFAST' %}bg-warning text-dark{% elif item.meal == 'LUNCH' %}bg-success{% elif item.meal == 'SNACKS' %}bg-info text-dark{% else %}bg-primary{% endif %} me-2">
+                                            {{ item.get_meal_display }}
+                                        </span>
+                                        <small class="text-muted">Hostel: {{ item.hostel.name }}</small>
+                                    </div>
+
+                                    {% if user.is_student %}
+                                        <form method="post" action="{% url 'mess_skip_meal' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="date" value="{{ item.date|date:'Y-m-d' }}">
+                                            <input type="hidden" name="meal" value="{{ item.meal }}">
+                                            {% if key in skipped_meal_keys %}
+                                                <input type="hidden" name="action" value="attend">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Click to cancel skip and attend this meal">
+                                                    <i class="bi bi-x-circle me-1"></i> Skipped (Rebate Claimed)
+                                                </button>
+                                            {% else %}
+                                                <input type="hidden" name="action" value="skip">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Mark as skipping to claim meal rebate">
+                                                    <i class="bi bi-dash-circle me-1"></i> Skip Meal
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    {% endif %}
+                                </div>
+                                <div class="text-secondary ps-1">
+                                    <i class="bi bi-card-text me-1 text-muted"></i>{{ item.items }}
+                                </div>
+                            </div>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="card shadow-sm border-0 py-5 text-center text-muted">
+                <i class="bi bi-calendar-x fs-1 text-muted d-block mb-3"></i>
+                <h5>No Mess Menus Published for This Week</h5>
+                <p class="mb-3">The warden or mess in-charge has not published menus for the upcoming days yet.</p>
+                {% if user.role == 'WARDEN' or user.role == 'ADMIN' or user.is_superuser %}
+                    <div>
+                        <a href="{% url 'mess_menu_publish' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Publish Menu Now
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

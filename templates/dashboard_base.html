@@ -90,6 +90,18 @@
                             <span>Complaints</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'maintenance_list' %}" class="sidebar-link {% if 'maintenance' in request.path %}active{% endif %}">
+                            <i class="bi bi-tools"></i>
+                            <span>Maintenance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'mess_menu' %}" class="sidebar-link {% if 'mess' in request.path %}active{% endif %}">
+                            <i class="bi bi-egg-fried"></i>
+                            <span>Mess & Rebates</span>
+                        </a>
+                    </li>
 
                 {% elif user.role == 'WARDEN' %}
                     <li class="sidebar-section-title">Warden Operations</li>
@@ -112,9 +124,21 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{% url 'warden_complaints' %}" class="sidebar-link {% if 'warden' in request.path and 'complaints' in request.path %}active{% endif %}">
+                        <a href="{% url 'warden_complaints' %}" class="sidebar-link {% if 'complaints' in request.path %}active{% endif %}">
                             <i class="bi bi-chat-left-dots"></i>
-                            <span>Maintenance Requests</span>
+                            <span>Complaints</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'maintenance_list' %}" class="sidebar-link {% if 'maintenance' in request.path %}active{% endif %}">
+                            <i class="bi bi-tools"></i>
+                            <span>Maintenance Board</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'mess_menu_publish' %}" class="sidebar-link {% if 'mess' in request.path %}active{% endif %}">
+                            <i class="bi bi-egg-fried"></i>
+                            <span>Publish Mess Menu</span>
                         </a>
                     </li>
                     <li>
@@ -179,6 +203,18 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{% url 'maintenance_staff_manage' %}" class="sidebar-link {% if 'maintenance/staff' in request.path %}active{% endif %}">
+                            <i class="bi bi-wrench-adjustable"></i>
+                            <span>Maintenance Staff</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'mess_reports' %}" class="sidebar-link {% if 'mess/reports' in request.path %}active{% endif %}">
+                            <i class="bi bi-pie-chart"></i>
+                            <span>Mess Analytics</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="{% url 'reports_hub' %}" class="sidebar-link {% if 'reports' in request.path and 'dashboard' not in request.path %}active{% endif %}">
                             <i class="bi bi-bar-chart-line"></i>
                             <span>Reports & Exports</span>
@@ -224,6 +260,12 @@
                         <a href="{% url 'payment_history' %}" class="sidebar-link {% if 'history' in request.path %}active{% endif %}">
                             <i class="bi bi-journal-text"></i>
                             <span>Payment History</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'mess_billing' %}" class="sidebar-link {% if 'mess/billing' in request.path %}active{% endif %}">
+                            <i class="bi bi-cash-stack"></i>
+                            <span>Mess Billing</span>
                         </a>
                     </li>
                     <li>

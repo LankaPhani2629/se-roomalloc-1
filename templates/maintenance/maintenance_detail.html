@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.pk }} Details - Maintenance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{% url 'maintenance_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Maintenance List
+            </a>
+            <span class="badge {% if ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' %}bg-success{% elif ticket.status == 'IN_PROGRESS' %}bg-warning text-dark{% else %}bg-primary{% endif %} fs-6 px-3 py-2">
+                {{ ticket.get_status_display }}
+            </span>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0">
+                    <i class="bi bi-ticket-detailed text-primary me-2"></i>Maintenance Ticket #{{ ticket.pk }}
+                </h4>
+                <span class="text-muted small">Logged {{ ticket.created_at|date:"d M Y, H:i" }}</span>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 bg-light">
+                            <h6 class="fw-bold text-muted text-uppercase small mb-2">Location & Room Info</h6>
+                            <div class="fs-5 fw-bold text-dark">Room {{ ticket.room.room_no }}</div>
+                            <div class="text-muted">{{ ticket.room.hostel.name }} (Floor {{ ticket.room.floor_no }})</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 bg-light">
+                            <h6 class="fw-bold text-muted text-uppercase small mb-2">Student Details</h6>
+                            <div class="fs-5 fw-bold text-dark">{{ ticket.student.name }}</div>
+                            <div class="text-muted">Roll: {{ ticket.student.student_id }} | Ph: {{ ticket.student.phone }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Category</small>
+                        <span class="fw-semibold">{{ ticket.get_category_display }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Priority</small>
+                        {% if ticket.priority == 'EMERGENCY' %}
+                            <span class="badge bg-danger">Emergency</span>
+                        {% elif ticket.priority == 'HIGH' %}
+                            <span class="badge bg-warning text-dark">High</span>
+                        {% elif ticket.priority == 'MEDIUM' %}
+                            <span class="badge bg-info text-dark">Medium</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Assigned Technician</small>
+                        {% if ticket.assigned_staff %}
+                            <span class="fw-semibold">{{ ticket.assigned_staff.name }} ({{ ticket.assigned_staff.specialization }})</span>
+                            <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ ticket.assigned_staff.phone }}</div>
+                        {% else %}
+                            <span class="text-muted italic">Not yet assigned</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold">Problem Description</h6>
+                    <div class="p-3 bg-light rounded border text-secondary" style="white-space: pre-wrap;">{{ ticket.description }}</div>
+                </div>
+
+                {% if ticket.photo %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Attached Photo</h6>
+                        <a href="{{ ticket.photo.url }}" target="_blank">
+                            <img src="{{ ticket.photo.url }}" alt="Maintenance Photo" class="img-thumbnail rounded" style="max-height: 250px;">
+                        </a>
+                    </div>
+                {% endif %}
+
+                {% if ticket.warden_notes %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Warden Instructions / Internal Notes</h6>
+                        <div class="p-3 bg-light-subtle rounded border border-info-subtle">{{ ticket.warden_notes }}</div>
+                    </div>
+                {% endif %}
+
+                {% if ticket.resolution_notes %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-success"><i class="bi bi-check-circle me-1"></i>Resolution Summary</h6>
+                        <div class="p-3 bg-success-subtle rounded border border-success-subtle">
+                            {{ ticket.resolution_notes }}
+                            {% if ticket.resolved_at %}
+                                <div class="small text-muted mt-2">Resolved on {{ ticket.resolved_at|date:"d M Y, H:i" }} ({% if ticket.resolution_duration_hours %}{{ ticket.resolution_duration_hours }} hours taken{% endif %})</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if ticket.rating or ticket.student_feedback %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><i class="bi bi-star-fill text-warning me-1"></i>Student Satisfaction & Feedback</h6>
+                        <div class="p-3 bg-warning-subtle rounded border border-warning-subtle">
+                            {% if ticket.rating %}
+                                <div class="mb-1 text-warning fs-5">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= ticket.rating %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                    <span class="text-dark fs-6 ms-2">({{ ticket.rating }} out of 5 stars)</span>
+                                </div>
+                            {% endif %}
+                            {% if ticket.student_feedback %}
+                                <div class="text-muted small">{{ ticket.student_feedback }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Student Action Box: Rate / Reopen -->
+        {% if user.is_student and ticket.student.user == user %}
+            {% if ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' %}
+                <div class="card shadow-sm border-0 mb-4 border-start border-4 border-warning">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-star me-2 text-warning"></i>Rate Service or Reopen Ticket</h5>
+                        <p class="text-muted small">Please verify if the maintenance issue in your room was completely resolved to your satisfaction.</p>
+
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <form method="post" action="{% url 'maintenance_rate' ticket.pk %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Service Rating (1 to 5 Stars)</label>
+                                        <select name="rating" class="form-select">
+                                            <option value="5" {% if ticket.rating == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐ 5 Stars - Excellent resolution</option>
+                                            <option value="4" {% if ticket.rating == 4 %}selected{% endif %}>⭐⭐⭐⭐ 4 Stars - Good work</option>
+                                            <option value="3" {% if ticket.rating == 3 %}selected{% endif %}>⭐⭐⭐ 3 Stars - Satisfactory</option>
+                                            <option value="2" {% if ticket.rating == 2 %}selected{% endif %}>⭐⭐ 2 Stars - Needs improvement</option>
+                                            <option value="1" {% if ticket.rating == 1 %}selected{% endif %}>⭐ 1 Star - Poor service</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Your Comments / Feedback</label>
+                                        <textarea name="feedback" rows="2" class="form-control" placeholder="Share your experience with the technician's work...">{{ ticket.student_feedback }}</textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success fw-semibold">
+                                        <i class="bi bi-check2-circle me-1"></i> Submit Rating & Close Ticket
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="col-md-5 border-start ps-md-4">
+                                <h6 class="fw-bold text-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Issue Not Resolved?</h6>
+                                <p class="text-muted small">If the repair did not work or the problem recurred, reopen this ticket to notify the hostel warden.</p>
+                                <form method="post" action="{% url 'maintenance_rate' ticket.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reopen">
+                                    <div class="mb-3">
+                                        <textarea name="reopen_reason" rows="2" class="form-control" placeholder="Reason for reopening ticket..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-exclamation-triangle me-1"></i> Reopen Ticket
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <!-- Warden / Admin Action Box: Update Status, Notes, Staff -->
+        {% if user.role == 'WARDEN' or user.role == 'ADMIN' or user.is_superuser %}
+            <div class="card shadow-sm border-0 mb-4 border-start border-4 border-primary">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-gear-fill me-2 text-primary"></i>Warden & Admin Operations</h5>
+                    <form method="post" action="{% url 'maintenance_update_status' ticket.pk %}">
+                        {% csrf_token %}
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Ticket Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="OPEN" {% if ticket.status == 'OPEN' %}selected{% endif %}>Open</option>
+                                    <option value="ASSIGNED" {% if ticket.status == 'ASSIGNED' %}selected{% endif %}>Assigned</option>
+                                    <option value="IN_PROGRESS" {% if ticket.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                    <option value="RESOLVED" {% if ticket.status == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+                                    <option value="CLOSED" {% if ticket.status == 'CLOSED' %}selected{% endif %}>Closed & Verified</option>
+                                    <option value="REOPENED" {% if ticket.status == 'REOPENED' %}selected{% endif %}>Reopened</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Assign Technician</label>
+                                <select name="assigned_staff" class="form-select">
+                                    <option value="">-- Select Staff / Technician --</option>
+                                    {% for staff in staff_members %}
+                                        <option value="{{ staff.pk }}" {% if ticket.assigned_staff_id == staff.pk %}selected{% endif %}>
+                                            {{ staff.name }} ({{ staff.specialization }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Warden Internal Instructions</label>
+                            <textarea name="warden_notes" rows="2" class="form-control" placeholder="Instructions for technician or room inspection remarks...">{{ ticket.warden_notes }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Resolution Notes (shown to student upon resolution)</label>
+                            <textarea name="resolution_notes" rows="2" class="form-control" placeholder="Describe actions taken (e.g. replaced flush valve, fixed circuit breaker)...">{{ ticket.resolution_notes }}</textarea>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" name="mark_room_maintenance" id="markRoomMaint" {% if ticket.room.status == 'MAINTENANCE' %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="markRoomMaint">
+                                Mark Room {{ ticket.room.room_no }} Status as "UNDER MAINTENANCE" (blocks new allocations)
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary fw-semibold px-4 shadow-sm">
+                            <i class="bi bi-save me-1"></i> Update Ticket & Notify Student
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

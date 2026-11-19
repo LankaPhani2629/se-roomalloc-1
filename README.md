@@ -47,6 +47,8 @@ The project follows Django's modular app architecture:
 - `allocations`: `Allocation`, `RoomChangeRequest`, `AllocationRule`, and `services.py` containing the automatic priority allocation engine and atomic room transfer services.
 - `fees`: `FeeStructure`, `FeePayment`, receipt generation (`RCP...`), pending dues monitoring, and allotment confirmation logic.
 - `complaints`: `Complaint` logging across categories (civil, electrical, plumbing, cleanliness) with tracking and warden resolution.
+- `maintenance`: `MaintenanceRequest` and `MaintenanceStaff` lifecycle tracking, technician assignment, student satisfaction rating (1-5 stars) and reopening.
+- `mess`: Weekly meal menu scheduling (`MessMenu`), student attendance and meal skip rebates (`MessAttendance`), daily meal feedback ratings (`MessFeedback`), and monthly mess billing calculations (`MessFee`).
 - `notifications`: In-app notification bell icon with live unread counter, and automated email dispatches via Django's console email backend.
 - `reports`: Dynamic dashboards for all 4 roles, and exportable reports (Occupancy, Vacancy, Allocation List, Fee Dues, Complaints) in PDF and Excel formats.
 

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Report Room Maintenance Issue - Campus Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="fw-bold mb-1">
+                        <i class="bi bi-tools text-primary me-2"></i>Report Maintenance Issue
+                    </h4>
+                    <p class="text-muted small mb-0">Submit a repair request for your currently allocated hostel room.</p>
+                </div>
+                <a href="{% url 'maintenance_list' %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- Current Room Notice -->
+                <div class="alert alert-light border d-flex align-items-center gap-3 mb-4 rounded-3">
+                    <i class="bi bi-door-open fs-2 text-primary"></i>
+                    <div>
+                        <div class="fw-bold">Allotted Room: {{ allocation.room.room_no }} ({{ allocation.room.hostel.name }})</div>
+                        <small class="text-muted">Student: {{ student.name }} ({{ student.student_id }})</small>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Issue Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="">-- Select Category --</option>
+                                {% for code, label in categories %}
+                                    <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Urgency / Priority <span class="text-danger">*</span></label>
+                            <select name="priority" class="form-select" required>
+                                {% for code, label in priorities %}
+                                    <option value="{{ code }}" {% if code == 'MEDIUM' %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Issue Description <span class="text-danger">*</span></label>
+                        <textarea name="description" rows="4" class="form-control" placeholder="Please provide specific details about the problem (e.g. leaking washbasin pipe, broken switchboard, fan not turning, door latch jammed)..." required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Optional Photo of the Issue</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*">
+                        <div class="form-text small">Attaching a clear photo helps maintenance technicians bring appropriate tools and replacement parts.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'maintenance_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-send me-1"></i> Submit Maintenance Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

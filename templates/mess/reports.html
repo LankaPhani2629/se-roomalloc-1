@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Mess Consumption & Satisfaction Analytics - Campus Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1">
+            <i class="bi bi-pie-chart-fill text-primary me-2"></i>Mess Quality & Wastage Analytics
+        </h2>
+        <p class="text-muted mb-0">Overview of student meal attendance, food satisfaction scores, and feedback reviews.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'mess_menu' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Menu
+        </a>
+        {% if user.role == 'ACCOUNTANT' or user.role == 'ADMIN' or user.is_superuser %}
+            <a href="{% url 'mess_billing' %}" class="btn btn-primary fw-semibold shadow-sm">
+                <i class="bi bi-cash-stack me-1"></i> Monthly Mess Billing
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 border-start border-4 border-info">
+            <div class="card-body p-4 d-flex align-items-center gap-3">
+                <div class="bg-info-subtle p-3 rounded-circle text-info">
+                    <i class="bi bi-slash-circle fs-2"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted text-uppercase small mb-1 fw-bold">Total Meal Skips Claimed</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ total_skipped }}</h2>
+                    <small class="text-muted">Meals preemptively notified to mess kitchen</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 border-start border-4 border-warning">
+            <div class="card-body p-4 d-flex align-items-center gap-3">
+                <div class="bg-warning-subtle p-3 rounded-circle text-warning">
+                    <i class="bi bi-chat-heart fs-2"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted text-uppercase small mb-1 fw-bold">Total Reviews Submitted</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ recent_feedbacks|length }}</h2>
+                    <small class="text-muted">Student quality & hygiene ratings logged</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Meal Rating Cards -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold mb-0"><i class="bi bi-star-fill text-warning me-2"></i>Satisfaction by Meal Session</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="list-group list-group-flush">
+                    {% for r in avg_ratings %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                            <div>
+                                <span class="fw-bold">{{ r.meal }}</span>
+                                <small class="text-muted d-block">{{ r.count }} rating(s) submitted</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    ★ {{ r.avg_rating|floatformat:1 }} / 5.0
+                                </span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-chat-square-dots fs-2 d-block mb-2"></i>
+                            No rating submissions available yet.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Student Reviews -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold mb-0"><i class="bi bi-chat-quote text-primary me-2"></i>Recent Student Feedback</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for fb in recent_feedbacks %}
+                        <div class="list-group-item p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold">{{ fb.student.name }} ({{ fb.student.student_id }})</span>
+                                <span class="badge bg-light text-warning border">★ {{ fb.rating }} / 5</span>
+                            </div>
+                            <small class="text-muted d-block mb-1">{{ fb.meal }} on {{ fb.date }}</small>
+                            {% if fb.comments %}
+                                <div class="small text-secondary bg-light p-2 rounded">{{ fb.comments }}</div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-chat-left-text fs-2 d-block mb-2"></i>
+                            No reviews logged yet.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

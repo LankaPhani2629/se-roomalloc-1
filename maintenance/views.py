@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from accounts.decorators import role_required, warden_required, admin_required, student_required
 from .models import MaintenanceRequest, MaintenanceStaff
-from notifications.models import Notification
+from notifications.utils import create_notification
 
 
 @login_required
@@ -80,8 +80,8 @@ def maintenance_create_view(request):
             # Notify the hostel warden
             warden = active_allocation.room.hostel.warden
             if warden:
-                Notification.objects.create(
-                    recipient=warden,
+                create_notification(
+                    user=warden,
                     title="New Maintenance Ticket",
                     message=f"Room {active_allocation.room.room_no} reported: {ticket.get_category_display()}",
                     link=f"/maintenance/request/{ticket.pk}/"
@@ -140,8 +140,8 @@ def maintenance_update_status_view(request, pk):
             ticket.room.save(update_fields=['status'])
 
         # Notify student of update
-        Notification.objects.create(
-            recipient=ticket.student.user,
+        create_notification(
+            user=ticket.student.user,
             title=f"Maintenance Ticket #{ticket.pk} Updated",
             message=f"Status: {ticket.get_status_display()}. {res_notes or notes}",
             link=f"/maintenance/request/{ticket.pk}/"
