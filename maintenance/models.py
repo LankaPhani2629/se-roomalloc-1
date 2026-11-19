@@ -1,8 +1,32 @@
+import os
+import uuid
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 from applications.models import Student
 from hostels.models import Room
+
+
+def validate_maintenance_photo(file):
+    max_size = 5 * 1024 * 1024  # 5 MB
+    if file.size > max_size:
+        raise ValidationError("Uploaded photo exceeds maximum allowed size of 5 MB.")
+    ext = os.path.splitext(file.name)[1].lower()
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+    if ext not in allowed_extensions:
+        raise ValidationError(f"Unsupported file extension '{ext}'. Only JPG, PNG, and WEBP image files are permitted.")
+
+
+def maintenance_photo_upload_path(instance, filename):
+    """
+    Sanitizes upload filename to a cryptographically random UUID,
+    preventing path traversal and preserving strict image extension.
+    """
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in ['.jpg', '.jpeg', '.png', '.webp']:
+        ext = '.jpg'
+    return os.path.join('maintenance_photos', f"{uuid.uuid4().hex}{ext}")
 
 
 class MaintenanceStaff(models.Model):
@@ -71,7 +95,13 @@ class MaintenanceRequest(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='maintenance_requests')
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     description = models.TextField(help_text="Detailed description of the maintenance issue.")
-    photo = models.ImageField(upload_to='maintenance_photos/', blank=True, null=True, help_text="Optional photo of the issue")
+    photo = models.ImageField(
+        upload_to=maintenance_photo_upload_path,
+        validators=[validate_maintenance_photo],
+        blank=True,
+        null=True,
+        help_text="Optional photo of the issue (Max 5MB; JPG, PNG, WEBP)"
+    )
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default=PRIO_MEDIUM)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_OPEN)
 

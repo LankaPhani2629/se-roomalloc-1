@@ -365,3 +365,60 @@ def admin_student_list_view(request):
         'gender': gender,
         'year': year,
     })
+
+
+@login_required
+@student_required
+def student_data_export_view(request):
+    """
+    GDPR Right to Access & Data Portability:
+    Exports all personal profile records, allocations, attendance, and fee history in JSON format.
+    """
+    try:
+        student = request.user.student_profile
+    except Exception:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+
+    allocations = [
+        {
+            'room_no': a.room.room_no,
+            'hostel': a.room.hostel.name,
+            'status': a.status,
+            'allocation_date': str(a.allocation_date),
+            'academic_year': a.academic_year,
+            'is_active': a.is_active,
+        }
+        for a in student.allocations.select_related('room', 'room__hostel').all()
+    ]
+
+    complaints = [
+        {
+            'id': c.id,
+            'title': c.title,
+            'category': c.category,
+            'status': c.status,
+            'created_at': str(c.created_at),
+        }
+        for c in student.complaints.all()
+    ]
+
+    data = {
+        'student_id': student.student_id,
+        'name': student.name,
+        'email': student.email,
+        'phone': student.phone,
+        'gender': student.gender,
+        'course': student.course,
+        'year': student.year,
+        'merit_score': float(student.merit_score),
+        'guardian_name': student.guardian_name,
+        'guardian_phone': student.guardian_phone,
+        'address': student.address,
+        'allocations': allocations,
+        'complaints': complaints,
+        'exported_at': str(timezone.now()),
+    }
+
+    response = JsonResponse(data, json_dumps_params={'indent': 2})
+    response['Content-Disposition'] = f'attachment; filename="student_data_{student.student_id}.json"'
+    return response

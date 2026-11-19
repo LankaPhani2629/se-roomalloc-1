@@ -68,27 +68,34 @@ def maintenance_create_view(request):
         if not category or not description:
             messages.error(request, "Please fill in all mandatory fields.")
         else:
-            ticket = MaintenanceRequest.objects.create(
-                student=student,
-                room=active_allocation.room,
-                category=category,
-                description=description,
-                priority=priority,
-                photo=photo,
-                status=MaintenanceRequest.STATUS_OPEN
-            )
-            # Notify the hostel warden
-            warden = active_allocation.room.hostel.warden
-            if warden:
-                create_notification(
-                    user=warden,
-                    title="New Maintenance Ticket",
-                    message=f"Room {active_allocation.room.room_no} reported: {ticket.get_category_display()}",
-                    link=f"/maintenance/request/{ticket.pk}/"
+            try:
+                ticket = MaintenanceRequest(
+                    student=student,
+                    room=active_allocation.room,
+                    category=category,
+                    description=description,
+                    priority=priority,
+                    photo=photo,
+                    status=MaintenanceRequest.STATUS_OPEN
                 )
+                ticket.full_clean()
+                ticket.save()
 
-            messages.success(request, f"Maintenance ticket #{ticket.pk} submitted successfully.")
-            return redirect('maintenance_list')
+                # Notify the hostel warden
+                warden = active_allocation.room.hostel.warden
+                if warden:
+                    create_notification(
+                        user=warden,
+                        title="New Maintenance Ticket",
+                        message=f"Room {active_allocation.room.room_no} reported: {ticket.get_category_display()}",
+                        link=f"/maintenance/request/{ticket.pk}/"
+                    )
+
+                messages.success(request, f"Maintenance ticket #{ticket.pk} submitted successfully.")
+                return redirect('maintenance_list')
+            except Exception as e:
+                err_msg = e.messages[0] if hasattr(e, 'messages') else str(e)
+                messages.error(request, f"Validation error: {err_msg}")
 
     return render(request, 'maintenance/maintenance_create.html', {
         'student': student,
