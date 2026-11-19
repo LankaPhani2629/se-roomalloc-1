@@ -103,3 +103,54 @@ class AccountsSecurityAndAuthTests(TestCase):
         res = self.client.get(reverse('dashboard_redirect'), follow=True)
         self.assertRedirects(res, reverse('admin_dashboard'))
         self.client.logout()
+
+    def test_open_redirect_prevention(self):
+        """Verify login rejects external open redirect URLs."""
+        res = self.client.post(
+            reverse('login') + '?next=https://attacker-malicious-site.com/exploit',
+            {
+                'username': 'student_user',
+                'password': self.password,
+            }
+        )
+        self.assertEqual(res.status_code, 302)
+        # Must redirect to safe local dashboard, NOT to external attacker site
+        self.assertEqual(res.url, reverse('dashboard_redirect'))
+
+    def test_brute_force_account_lockout(self):
+        """Verify 5 failed attempts locks user account with locked_until timestamp."""
+        for i in range(5):
+            self.client.post(reverse('login'), {
+                'username': 'student_user',
+                'password': 'BadPassword999!',
+            })
+
+        self.student_user.refresh_from_db()
+        self.assertEqual(self.student_user.failed_login_attempts, 5)
+        self.assertTrue(self.student_user.is_locked)
+
+        # 6th attempt with CORRECT password must still be rejected while locked
+        res = self.client.post(reverse('login'), {
+            'username': 'student_user',
+            'password': self.password,
+        })
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "temporarily locked")
+
+    def test_health_check_endpoint(self):
+        """Verify /health/ endpoint returns HTTP 200 and JSON healthy status."""
+        res = self.client.get(reverse('health_check'))
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data['status'], 'healthy')
+        self.assertEqual(data['services']['database'], 'connected')
+
+    def test_student_data_export_gdpr(self):
+        """Verify student data export returns JSON attachment with personal records."""
+        self.client.login(username='student_user', password=self.password)
+        res = self.client.get(reverse('student_data_export'))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res['Content-Type'], 'application/json')
+        data = res.json()
+        self.assertEqual(data['student_id'], 'ROLL-TEST-01')
+        self.assertEqual(data['name'], 'Test Student')
