@@ -1,20 +1,54 @@
 """
 Django settings for hostel_project project.
+Hardened for production deployment according to OWASP & NIST security standards.
 """
 
 from pathlib import Path
 import os
+import urllib.parse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-tvkois13r*$)5!i#odwztg!c3o9n)504fzh5@b0wlgta^w3192'
+# -----------------------------------------------------------------------------
+# 1. Environment Loading (.env support)
+# -----------------------------------------------------------------------------
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    try:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    k = k.strip()
+                    v = v.strip().strip("'\"")
+                    if k and k not in os.environ:
+                        os.environ[k] = v
+    except Exception as e:
+        pass
 
-DEBUG = True
+# -----------------------------------------------------------------------------
+# 2. Core Security & Environment Variables
+# -----------------------------------------------------------------------------
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-dev-only-change-in-prod-tvkois13r*$)5!i#odwztg!c3o9n'
+    else:
+        raise ValueError("SECRET_KEY environment variable MUST be set when DEBUG=False in production!")
 
-# Application definition
+allowed_hosts_raw = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost')
+ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
 
+csrf_trusted_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if csrf_trusted_raw:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_trusted_raw.split(',') if o.strip()]
+
+# -----------------------------------------------------------------------------
+# 3. Application Definition
+# -----------------------------------------------------------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,9 +79,12 @@ AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # WhiteNoise must come directly after SecurityMiddleware so it can serve
-    # compressed, cached static files for both Django dev server and production.
+    # WhiteNoise must come directly after SecurityMiddleware for static files
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # Content Security Policy and Browser Permissions Policy
+    'hostel_project.middleware.SecurityHeadersMiddleware',
+    # IP-based rate limiting on sensitive routes & general traffic
+    'hostel_project.middleware.RateLimitMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,44 +115,74 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hostel_project.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# -----------------------------------------------------------------------------
+# 4. Database & Connection Pooling
+# -----------------------------------------------------------------------------
+db_url = os.environ.get('DATABASE_URL')
+conn_max_age = int(os.environ.get('DB_CONN_MAX_AGE', '600'))
 
+if db_url and db_url.startswith('postgres'):
+    parsed = urllib.parse.urlparse(db_url)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed.path.lstrip('/'),
+            'USER': parsed.username or '',
+            'PASSWORD': parsed.password or '',
+            'HOST': parsed.hostname or 'localhost',
+            'PORT': parsed.port or 5432,
+            'CONN_MAX_AGE': conn_max_age,
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'CONN_MAX_AGE': conn_max_age,
+        }
+    }
+
+# -----------------------------------------------------------------------------
+# 5. Enterprise Password Validators
+# -----------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {'min_length': 6},
+        'OPTIONS': {'min_length': 8},
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
+# -----------------------------------------------------------------------------
+# 6. Internationalization & Timezones
+# -----------------------------------------------------------------------------
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
+# -----------------------------------------------------------------------------
+# 7. Static & Media Assets
+# -----------------------------------------------------------------------------
 STATIC_URL = '/static/'
-
-# Directory where collectstatic gathers all static files for production serving.
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# STATICFILES_DIRS lists extra locations Django's finders search (dev only).
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# WhiteNoise: serve compressed + fingerprinted static files in production.
-# CompressedManifestStaticFilesStorage adds content hashes to filenames
-# (cache-busting) and pre-compresses assets with gzip/brotli.
+# WhiteNoise storage: hash-based caching and pre-compression
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Allow WhiteNoise to use Django's finders in DEBUG mode so collectstatic
-# is not required during local development.
 WHITENOISE_USE_FINDERS = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -123,19 +190,103 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard_redirect'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Email backend: Console email backend for notifications
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'hostel-admin@college.edu'
+# -----------------------------------------------------------------------------
+# 8. Email Dispatch Configuration
+# -----------------------------------------------------------------------------
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '25'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'False').lower() in ('true', '1')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'hostel-admin@college.edu')
 
-# Media Files (User uploads such as maintenance photos)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# Security & Session Management: 30 minutes inactivity timeout
-SESSION_COOKIE_AGE = 1800
+# -----------------------------------------------------------------------------
+# 9. Session & Cookie Hardening
+# -----------------------------------------------------------------------------
+SESSION_COOKIE_AGE = 1800  # 30 minutes inactivity timeout
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# -----------------------------------------------------------------------------
+# 10. Production HTTPS / TLS & Browser Protection Headers
+# -----------------------------------------------------------------------------
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Account Security & Failed Attempts Lockout
-MAX_FAILED_LOGIN_ATTEMPTS = 5
-LOGIN_LOCKOUT_MINUTES = 15
+MAX_FAILED_LOGIN_ATTEMPTS = int(os.environ.get('MAX_FAILED_LOGIN_ATTEMPTS', '5'))
+LOGIN_LOCKOUT_MINUTES = int(os.environ.get('LOGIN_LOCKOUT_MINUTES', '15'))
 
+RATE_LIMIT_AUTH = int(os.environ.get('RATE_LIMIT_AUTH', '15'))
+RATE_LIMIT_GLOBAL = int(os.environ.get('RATE_LIMIT_GLOBAL', '200'))
+
+# -----------------------------------------------------------------------------
+# 11. Structured Logging & Auditing
+# -----------------------------------------------------------------------------
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} [{name}:{lineno}] {message}',
+            'style': '{',
+        },
+        'security': {
+            'format': '[SECURITY AUDIT] [{asctime}] {levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'security_console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'security',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+        'django.security': {
+            'handlers': ['security_console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'accounts.security': {
+            'handlers': ['security_console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'allocations': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'fees': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
