@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}403 - Access Denied{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 text-center">
+        <div class="display-1 fw-bold text-danger mb-3">403</div>
+        <h3 class="fw-bold mb-2">Access Denied / Forbidden</h3>
+        <p class="text-muted mb-4">
+            {% if message %}
+                {{ message }}
+            {% else %}
+                You do not possess the necessary role credentials or administrative authorization to access this page.
+            {% endif %}
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'dashboard_redirect' %}" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                <i class="bi bi-speedometer2 me-1"></i> My Dashboard
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">
+                Return Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

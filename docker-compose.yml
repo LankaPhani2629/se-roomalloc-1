@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hostel_db
+      POSTGRES_USER: hostel_user
+      POSTGRES_PASSWORD: secure_db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hostel_user -d hostel_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: "replace-with-a-production-secret-key-token-here"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,web"
+      DATABASE_URL: "postgres://hostel_user:secure_db_password@db:5432/hostel_db"
+      DB_CONN_MAX_AGE: "600"
+      SECURE_SSL_REDIRECT: "False" # Set True if terminating TLS directly on container
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media_volume:/app/media
+
+volumes:
+  postgres_data:
+  media_volume:

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Server Error{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 text-center">
+        <div class="display-1 fw-bold text-danger mb-3">500</div>
+        <h3 class="fw-bold mb-2">Unexpected Internal Error</h3>
+        <p class="text-muted mb-4">
+            Our systems encountered an unexpected condition while processing your request. The incident has been recorded in our secure server audit logs.
+        </p>
+        <a href="{% url 'home' %}" class="btn btn-primary px-4 fw-semibold shadow-sm">
+            <i class="bi bi-house-door me-1"></i> Return to Safety
+        </a>
+    </div>
+</div>
+{% endblock %}

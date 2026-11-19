@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 text-center">
+        <div class="display-1 fw-bold text-primary mb-3">404</div>
+        <h3 class="fw-bold mb-2">Resource or Page Not Found</h3>
+        <p class="text-muted mb-4">
+            The page or record you are searching for does not exist, has been relocated, or is no longer available.
+        </p>
+        <a href="{% url 'home' %}" class="btn btn-primary px-4 fw-semibold shadow-sm">
+            <i class="bi bi-house-door me-1"></i> Return Home
+        </a>
+    </div>
+</div>
+{% endblock %}

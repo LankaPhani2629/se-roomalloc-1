@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy & Data Protection - Campus Residences{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h3 class="fw-bold mb-1"><i class="bi bi-shield-check text-success me-2"></i>Data Privacy & Protection Policy</h3>
+                <p class="text-muted small mb-0">Compliance with university policies and international data protection standards (GDPR-aligned).</p>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <section class="mb-4">
+                    <h5 class="fw-bold text-dark">1. Information We Collect</h5>
+                    <p class="text-secondary">
+                        The Campus Hostel Room Allocation System processes student housing applications, room assignments, attendance records, mess billing, and maintenance complaints. We collect and store:
+                    </p>
+                    <ul class="text-secondary">
+                        <li><strong>Personal & Identity Information:</strong> Student roll number, official name, gender, academic course, year of study, merit score, permanent address, contact telephone, and email.</li>
+                        <li><strong>Guardian Details:</strong> Emergency contact name and phone number.</li>
+                        <li><strong>Housing Records:</strong> Hostel block, room number, roommates, check-in dates, and fee receipts.</li>
+                        <li><strong>Authentication Data:</strong> Usernames, salted cryptographic password hashes, and session access timestamps.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-4">
+                    <h5 class="fw-bold text-dark">2. Purpose of Processing</h5>
+                    <p class="text-secondary">
+                        Your information is processed exclusively for campus residential logistics, capacity planning, student safety verification, mess billing calculations with meal rebates, and facility maintenance resolution.
+                    </p>
+                </section>
+
+                <section class="mb-4">
+                    <h5 class="fw-bold text-dark">3. Data Retention & Security</h5>
+                    <p class="text-secondary">
+                        All student records are encrypted in transit using HTTPS/TLS. Passwords are never stored in plain text and are hashed using industry-standard salted PBKDF2/SHA256 algorithms. Sessions automatically expire after 30 minutes of inactivity.
+                    </p>
+                </section>
+
+                <section class="mb-4">
+                    <h5 class="fw-bold text-dark">4. Your Data Rights (Right to Access & Portability)</h5>
+                    <p class="text-secondary">
+                        Students have the right to inspect and download an electronic copy of their personal records at any time. When logged in, visit the 
+                        <a href="{% url 'student_data_export' %}" class="fw-semibold">Student Data Export</a> 
+                        endpoint to download your complete profile, allocation, and complaint history in machine-readable JSON format.
+                    </p>
+                </section>
+
+                <section>
+                    <h5 class="fw-bold text-dark">5. Contact Information</h5>
+                    <p class="text-secondary mb-0">
+                        For data inquiries, rectification requests, or security disclosures, please contact the Chief Warden and University Systems Administrator at <code>hostel-admin@college.edu</code>.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
