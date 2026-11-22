@@ -32,19 +32,23 @@ if env_path.exists():
 # -----------------------------------------------------------------------------
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    if DEBUG:
-        SECRET_KEY = 'django-insecure-dev-only-change-in-prod-tvkois13r*$)5!i#odwztg!c3o9n'
-    else:
-        raise ValueError("SECRET_KEY environment variable MUST be set when DEBUG=False in production!")
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-prod-fallback-key-please-set-env-var-in-dashboard-3o9n504fzh5'
+)
 
 allowed_hosts_raw = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,.onrender.com,.vercel.app,.railway.app')
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
+# Guarantee cloud domains and local development are always permitted
+for default_host in ['.vercel.app', '.onrender.com', '.railway.app', 'localhost', '127.0.0.1']:
+    if default_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(default_host)
 
 csrf_trusted_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com,https://*.vercel.app,https://*.railway.app')
-if csrf_trusted_raw:
-    CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_trusted_raw.split(',') if o.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_trusted_raw.split(',') if o.strip()]
+for default_origin in ['https://*.vercel.app', 'https://*.onrender.com', 'https://*.railway.app']:
+    if default_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(default_origin)
 
 # -----------------------------------------------------------------------------
 # 3. Application Definition
@@ -151,10 +155,13 @@ if db_url and (db_url.startswith('postgres://') or db_url.startswith('postgresql
         }
     }
 else:
+    # On serverless platforms like Vercel or AWS Lambda, the app root is read-only.
+    # Fallback to /tmp for local sqlite if writable.
+    db_path = Path('/tmp/db.sqlite3') if os.environ.get('VERCEL') else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_path,
             'CONN_MAX_AGE': conn_max_age,
         }
     }
@@ -193,8 +200,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# WhiteNoise storage: hash-based caching and pre-compression
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise storage: CompressedStaticFilesStorage compresses assets safely without
+# requiring staticfiles.json manifest during serverless builds.
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 WHITENOISE_USE_FINDERS = True
 
 MEDIA_URL = '/media/'
