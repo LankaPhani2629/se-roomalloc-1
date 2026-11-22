@@ -39,10 +39,10 @@ if not SECRET_KEY:
     else:
         raise ValueError("SECRET_KEY environment variable MUST be set when DEBUG=False in production!")
 
-allowed_hosts_raw = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost')
+allowed_hosts_raw = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,.onrender.com,.vercel.app,.railway.app')
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
 
-csrf_trusted_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+csrf_trusted_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com,https://*.vercel.app,https://*.railway.app')
 if csrf_trusted_raw:
     CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_trusted_raw.split(',') if o.strip()]
 
@@ -116,22 +116,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'hostel_project.wsgi.application'
 
 # -----------------------------------------------------------------------------
-# 4. Database & Connection Pooling
+# 4. Database & Connection Pooling (Supabase Postgres & SQLite Support)
 # -----------------------------------------------------------------------------
 db_url = os.environ.get('DATABASE_URL')
 conn_max_age = int(os.environ.get('DB_CONN_MAX_AGE', '600'))
 
-if db_url and db_url.startswith('postgres'):
+if db_url and (db_url.startswith('postgres://') or db_url.startswith('postgresql://')):
     parsed = urllib.parse.urlparse(db_url)
+    
+    # Check if host is Supabase
+    host_str = parsed.hostname or ''
+    is_supabase = 'supabase.co' in host_str or 'supabase.com' in host_str
+    
+    # Query parameters (e.g. ?sslmode=require)
+    query_params = urllib.parse.parse_qs(parsed.query)
+    ssl_mode = query_params.get('sslmode', ['require' if is_supabase else 'prefer'])[0]
+
+    # Handle PgBouncer transaction pooler (port 6543)
+    db_port = parsed.port or 5432
+    effective_conn_max_age = 0 if (is_supabase and db_port == 6543) else conn_max_age
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': parsed.path.lstrip('/'),
-            'USER': parsed.username or '',
-            'PASSWORD': parsed.password or '',
-            'HOST': parsed.hostname or 'localhost',
-            'PORT': parsed.port or 5432,
-            'CONN_MAX_AGE': conn_max_age,
+            'USER': urllib.parse.unquote(parsed.username or ''),
+            'PASSWORD': urllib.parse.unquote(parsed.password or ''),
+            'HOST': host_str,
+            'PORT': db_port,
+            'CONN_MAX_AGE': effective_conn_max_age,
+            'OPTIONS': {
+                'sslmode': ssl_mode,
+            }
         }
     }
 else:
